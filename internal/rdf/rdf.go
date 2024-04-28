@@ -2,62 +2,94 @@ package rdf
 
 import "fmt"
 
-type Decoration uint8
+type decoration uint8
 
 const (
-	Quoted Decoration = iota
-	Angled
-	Intact
+	None decoration = iota
+	Quotes
+	AngleBrackets
 )
 
 type Term struct {
-	Value string
-	Type  Decoration
+	value string
+	decor decoration
 }
 
-func (term Term) String() string {
-	switch term.Type {
-	case Quoted:
-		return `"` + term.Value + `"`
-	case Angled:
-		return `<` + term.Value + `>`
-	default:
-		return term.Value
+func NewTerm(value string, decor decoration) *Term {
+	return &Term{
+		value: value,
+		decor: decor,
 	}
 }
 
+func (term *Term) String() string {
+	switch term.decor {
+	case None:
+		return term.value
+	case Quotes:
+		return `"` + term.value + `"`
+	case AngleBrackets:
+		return "<" + term.value + ">"
+	}
+
+	panic("Bad term decoration type")
+}
+
 type Facet struct {
-	Key  string
-	Term Term
+	key  string
+	term *Term
+}
+
+func NewFacet(key string, term *Term) *Facet {
+	return &Facet{
+		key:  key,
+		term: term,
+	}
 }
 
 type Triple struct {
-	Subject  Term
-	Predicat Term
-	Object   Term
-	Facets   []Facet
+	subject  *Term
+	predicat *Term
+	object   *Term
+	facets   []*Facet
 }
 
-func (triple Triple) String() string {
-	var facets string
-	if len(triple.Facets) > 0 {
+func NewTriple(
+	subject *Term,
+	predicat *Term,
+	object *Term,
+	facets []*Facet,
+) *Triple {
+	return &Triple{
+		subject:  subject,
+		predicat: predicat,
+		object:   object,
+		facets:   facets,
+	}
+}
+
+func (triple *Triple) String() string {
+	facets := ""
+	if len(triple.facets) > 0 {
 		facets = "("
-		for i, f := range triple.Facets {
+		for i, f := range triple.facets {
 			if i > 0 {
 				facets += ", "
 			}
-
-			facets += f.Key + "=" + f.Term.String()
+			facets += f.key + "=" + f.term.String()
 		}
-
 		facets += ") "
 	}
 
 	return fmt.Sprintf(
 		"%s %s %s %s.",
-		triple.Subject.String(),
-		triple.Predicat.String(),
-		triple.Object.String(),
+		triple.subject.String(),
+		triple.predicat.String(),
+		triple.object.String(),
 		facets,
 	)
+}
+
+func BlankNode(id string) string {
+	return "_:" + id
 }
