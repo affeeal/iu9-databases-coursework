@@ -90,6 +90,10 @@ func (triple *Triple) String() string {
 	)
 }
 
+func (triple *Triple) Stringln() string {
+	return triple.String() + "\n"
+}
+
 func BlankNode(id string) string {
 	return "_:" + id
 }

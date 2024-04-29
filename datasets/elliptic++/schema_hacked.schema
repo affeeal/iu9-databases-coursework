@@ -1,3 +1,5 @@
+# Some int predicates are replaced with float due to the bulk load errors.
+
 class: int .
 successors: [uid] .
 Time_step: int .
@@ -166,13 +168,13 @@ Aggregate_feature_69: float .
 Aggregate_feature_70: float .
 Aggregate_feature_71: float .
 Aggregate_feature_72: float .
-in_txs_degree: int .
-out_txs_degree: int .
+in_txs_degree: float .
+out_txs_degree: float .
 total_BTC: float .
 fees: float .
-size: int .
-num_input_addresses: int .
-num_output_addresses: int .
+size: float .
+num_input_addresses: float .
+num_output_addresses: float .
 in_BTC_min: float .
 in_BTC_max: float .
 in_BTC_mean: float .

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/csv"
 	"flag"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -13,6 +12,12 @@ import (
 )
 
 type actionFacets = map[string]map[string]*rdf.Term
+
+const (
+	blankUserIdPrefix   = "u"
+	blankActionIdPrefix = "a"
+	blankTargetIdPrefix = "t"
+)
 
 var (
 	actionsFilename        string
@@ -58,31 +63,32 @@ func fillActionLabels(actionFacets actionFacets, actionLabelsFilename string) {
 	reader := csv.NewReader(actionLabelsFile)
 	reader.Comma = '\t'
 
-	// Skip headers
-	record, err := reader.Read()
+	headers, err := reader.Read()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var (
+		record []string
+		label  bool
+	)
 
 	for {
 		record, err = reader.Read()
 		if err == io.EOF {
 			break
-		}
-		if err != nil {
+		} else if err != nil {
 			log.Fatal(err)
 		}
 
-		actionId := record[actionIdIdx]
-		label, err := strconv.ParseBool(record[labelIdx])
-		if err != nil {
+		if label, err = strconv.ParseBool(record[labelIdx]); err != nil {
 			log.Fatal(err)
 		}
 
 		add(
 			actionFacets,
-			actionId,
-			"label",
+			record[actionIdIdx],
+			headers[labelIdx],
 			rdf.NewTerm(strconv.FormatBool(label), rdf.None),
 		)
 	}
@@ -95,8 +101,7 @@ func fillActionFeatures(
 	const (
 		actionIdIdx = iota
 		feature0Idx
-
-		features = 4
+		feature3Idx = 4
 	)
 
 	actionFeaturesFile, err := os.Open(actionFeaturesFilename)
@@ -108,28 +113,27 @@ func fillActionFeatures(
 	reader := csv.NewReader(actionFeaturesFile)
 	reader.Comma = '\t'
 
-	// Skip headers
-	record, err := reader.Read()
+	headers, err := reader.Read()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var record []string
 
 	for {
 		record, err = reader.Read()
 		if err == io.EOF {
 			break
-		}
-		if err != nil {
+		} else if err != nil {
 			log.Fatal(err)
 		}
 
-		actionId := record[actionIdIdx]
-		for i := 0; i < features; i++ {
+		for i := feature0Idx; i <= feature3Idx; i++ {
 			add(
 				actionFacets,
-				actionId,
-				"feature"+strconv.Itoa(i),
-				rdf.NewTerm(record[feature0Idx+i], rdf.None),
+				record[actionIdIdx],
+				headers[i],
+				rdf.NewTerm(record[i], rdf.None),
 			)
 		}
 	}
@@ -156,51 +160,51 @@ func handleActions(
 	reader := csv.NewReader(actionsFile)
 	reader.Comma = '\t'
 
-	// Skip headers
-	record, err := reader.Read()
+	headers, err := reader.Read()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var (
+		record                                    []string
+		blankUserId, blankActionId, blankTargetId string
+		performs, on                              *rdf.Triple
+	)
 
 	for {
 		record, err = reader.Read()
 		if err == io.EOF {
 			break
-		}
-		if err != nil {
+		} else if err != nil {
 			log.Fatal(err)
 		}
 
-		actionId := record[actionIdIdx]
 		add(
 			actionFacets,
-			actionId,
-			"timestamp",
+			record[actionIdIdx],
+			headers[timestampIdx],
 			rdf.NewTerm(record[timestampIdx], rdf.None),
 		)
 
-		blankUserId := rdf.BlankNode("u" + record[userIdIdx])
-		blankActionId := rdf.BlankNode("a" + actionId)
-		blankTargetId := rdf.BlankNode("t" + record[targetIdIdx])
+		blankUserId = rdf.BlankNode(blankUserIdPrefix + record[userIdIdx])
+		blankActionId = rdf.BlankNode(blankActionIdPrefix + record[actionIdIdx])
+		blankTargetId = rdf.BlankNode(blankTargetIdPrefix + record[targetIdIdx])
 
-		performs := rdf.NewTriple(
+		performs = rdf.NewTriple(
 			rdf.NewTerm(blankUserId, rdf.None),
 			rdf.NewTerm("performs", rdf.AngleBrackets),
 			rdf.NewTerm(blankActionId, rdf.None),
-			convert(actionFacets[actionId]),
+			convert(actionFacets[record[actionIdIdx]]),
 		)
 
-		on := rdf.NewTriple(
+		on = rdf.NewTriple(
 			rdf.NewTerm(blankActionId, rdf.None),
 			rdf.NewTerm("on", rdf.AngleBrackets),
 			rdf.NewTerm(blankTargetId, rdf.None),
-			[]*rdf.Facet{},
+			nil,
 		)
 
-		_, err = outputFile.WriteString(
-			fmt.Sprintf("%s\n%s\n", performs.String(), on.String()),
-		)
-		if err != nil {
+		if _, err = outputFile.WriteString(performs.Stringln() + on.Stringln()); err != nil {
 			log.Fatal()
 		}
 	}
