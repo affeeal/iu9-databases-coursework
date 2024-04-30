@@ -5,4 +5,4 @@ DATASETS = elliptic++ act-mooc
 clean: $(DATASETS)
 
 $(DATASETS):
-	rm transform-$@ datasets/$@/transformed/$@.rdf
+	rm -f transform-$@ datasets/$@/transformed/$@.rdf
