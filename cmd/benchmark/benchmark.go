@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/dgraph-io/dgo/v230"
@@ -21,13 +22,7 @@ type lstVar []string
 const (
 	defaultHost = "localhost"
 	defaultPort = 9080
-	testQuery   = `
-		{
-			q(func: has(successors), first: 1000) {
-				uid	
-			}
-		}
-	`
+	maxRcvbytes = 1e+8
 )
 
 var (
@@ -56,6 +51,7 @@ func formTarget(host string, port uint) string {
 func getDgraphClient(host string, port uint) (*dgo.Dgraph, cancelFunc) {
 	conn, err := grpc.Dial(
 		formTarget(host, port),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxRcvbytes)),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 
@@ -66,13 +62,26 @@ func getDgraphClient(host string, port uint) (*dgo.Dgraph, cancelFunc) {
 	dc := api.NewDgraphClient(conn)
 	dg := dgo.NewDgraphClient(dc)
 
-	// TODO: login
-
 	return dg, func() {
 		if err := conn.Close(); err != nil {
 			log.Fatal(err)
 		}
 	}
+}
+
+func performQuery(dg *dgo.Dgraph, queryFilename string) *api.Latency {
+	query, err := os.ReadFile(queryFilename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	txn := dg.NewReadOnlyTxn().BestEffort()
+	resp, err := txn.Query(context.Background(), string(query))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return resp.GetLatency()
 }
 
 func init() {
@@ -91,14 +100,10 @@ func main() {
 	dg, cancel := getDgraphClient(host, port)
 	defer cancel()
 
-	txn := dg.NewReadOnlyTxn().BestEffort()
-	resp, err := txn.Query(
-		context.Background(),
-		testQuery,
-	)
-	if err != nil {
-		log.Fatal(err)
+	var latency *api.Latency
+	for _, queryFilename := range queryFilenames {
+		latency = performQuery(dg, queryFilename)
+		fmt.Println(*latency)
+		// TODO: handle latency
 	}
-
-	fmt.Println(resp.Latency.GetProcessingNs())
 }
