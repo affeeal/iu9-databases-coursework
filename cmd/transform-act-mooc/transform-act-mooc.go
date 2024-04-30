@@ -14,6 +14,11 @@ import (
 type actionFacets = map[string]map[string]*rdf.Term
 
 const (
+	datasetName        = "act-mooc"
+	datasetDefaultPath = "datasets/" + datasetName + "/"
+	sourceDefaultPath  = datasetDefaultPath + "source/"
+	outputDefaultPath  = datasetDefaultPath + "transformed/"
+
 	blankUserIdPrefix   = "u"
 	blankActionIdPrefix = "a"
 	blankTargetIdPrefix = "t"
@@ -214,25 +219,25 @@ func init() {
 	flag.StringVar(
 		&actionsFilename,
 		"mooc-actions",
-		"datasets/act-mooc/mooc_actions.tsv",
+		sourceDefaultPath+"mooc_actions.tsv",
 		"path to mooc_actions.tsv",
 	)
 	flag.StringVar(
 		&actionLabelsFilename,
 		"mooc-action-labels",
-		"datasets/act-mooc/mooc_action_labels.tsv",
+		sourceDefaultPath+"mooc_action_labels.tsv",
 		"path to mooc_action_labels.tsv",
 	)
 	flag.StringVar(
 		&actionFeaturesFilename,
 		"mooc-action-features",
-		"datasets/act-mooc/mooc_action_features.tsv",
+		sourceDefaultPath+"mooc_action_features.tsv",
 		"path to mooc_action_features.tsv",
 	)
 	flag.StringVar(
 		&outputFilename,
 		"output",
-		"datasets/act-mooc/act_mooc.rdf",
+		outputDefaultPath+datasetName+".rdf",
 		"rdf output path",
 	)
 }

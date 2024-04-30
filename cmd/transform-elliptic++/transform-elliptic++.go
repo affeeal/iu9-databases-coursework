@@ -10,7 +10,14 @@ import (
 	"github.com/affeeal/iu9-database-coursework/internal/rdf"
 )
 
-const blankTxIdPrefix = "t"
+const (
+	datasetName        = "elliptic++"
+	datasetDefaultPath = "datasets/" + datasetName + "/"
+	sourceDefaultPath  = datasetDefaultPath + "source/"
+	outputDefaultPath  = datasetDefaultPath + "transformed/"
+
+	blankTxIdPrefix = "t"
+)
 
 var (
 	classesFilename  string
@@ -177,25 +184,25 @@ func init() {
 	flag.StringVar(
 		&classesFilename,
 		"txs-classes",
-		"datasets/elliptic++/txs_classes.csv",
+		sourceDefaultPath+"txs_classes.csv",
 		"path to txc_classes.csv",
 	)
 	flag.StringVar(
 		&edgelistFilename,
 		"txs-edgelist",
-		"datasets/elliptic++/txs_edgelist.csv",
+		sourceDefaultPath+"txs_edgelist.csv",
 		"path to txs_edgelist.csv",
 	)
 	flag.StringVar(
 		&featuresFilename,
 		"txs-features",
-		"datasets/elliptic++/txs_features.csv",
+		sourceDefaultPath+"txs_features.csv",
 		"path to txs_features.tsv",
 	)
 	flag.StringVar(
 		&outputFilename,
 		"output",
-		"datasets/elliptic++/elliptic++.rdf",
+		outputDefaultPath+datasetName+".rdf",
 		"rdf output path",
 	)
 }
