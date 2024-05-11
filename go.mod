@@ -4,12 +4,13 @@ go 1.22.0
 
 require (
 	github.com/dgraph-io/dgo/v230 v230.0.1
+	github.com/pkg/errors v0.9.1
 	google.golang.org/grpc v1.63.2
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/pkg/errors v0.8.1 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect

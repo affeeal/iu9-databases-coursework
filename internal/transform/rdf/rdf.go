@@ -2,37 +2,34 @@ package rdf
 
 import "fmt"
 
-type decoration uint8
+type Decoration uint8
 
 const (
-	None decoration = iota
+	None Decoration = iota
 	Quotes
 	AngleBrackets
 )
 
 type Term struct {
-	value string
-	decor decoration
+	val string
+	dec Decoration
 }
 
-func NewTerm(value string, decor decoration) *Term {
-	return &Term{
-		value: value,
-		decor: decor,
-	}
+func NewTerm(val string, dec Decoration) *Term {
+	return &Term{val: val, dec: dec}
 }
 
 func (term *Term) String() string {
-	switch term.decor {
+	switch term.dec {
 	case None:
-		return term.value
+		return term.val
 	case Quotes:
-		return `"` + term.value + `"`
+		return `"` + term.val + `"`
 	case AngleBrackets:
-		return "<" + term.value + ">"
+		return "<" + term.val + ">"
 	}
 
-	panic("Bad term decoration type")
+	panic("bad term decoration type") // won't be called
 }
 
 type Facet struct {
@@ -41,26 +38,23 @@ type Facet struct {
 }
 
 func NewFacet(key string, term *Term) *Facet {
-	return &Facet{
-		key:  key,
-		term: term,
-	}
+	return &Facet{key: key, term: term}
 }
 
-type Triple struct {
+type RDF struct {
 	subject  *Term
 	predicat *Term
 	object   *Term
 	facets   []*Facet
 }
 
-func NewTriple(
+func NewRDF(
 	subject *Term,
 	predicat *Term,
 	object *Term,
 	facets []*Facet,
-) *Triple {
-	return &Triple{
+) *RDF {
+	return &RDF{
 		subject:  subject,
 		predicat: predicat,
 		object:   object,
@@ -68,15 +62,15 @@ func NewTriple(
 	}
 }
 
-func (triple *Triple) String() string {
+func (triple *RDF) String() string {
 	facets := ""
 	if len(triple.facets) > 0 {
 		facets = "("
-		for i, f := range triple.facets {
+		for i, facet := range triple.facets {
 			if i > 0 {
 				facets += ", "
 			}
-			facets += f.key + "=" + f.term.String()
+			facets += facet.key + "=" + facet.term.String()
 		}
 		facets += ") "
 	}
@@ -90,10 +84,6 @@ func (triple *Triple) String() string {
 	)
 }
 
-func (triple *Triple) Stringln() string {
+func (triple *RDF) Stringln() string {
 	return triple.String() + "\n"
-}
-
-func BlankNode(id string) string {
-	return "_:" + id
 }
