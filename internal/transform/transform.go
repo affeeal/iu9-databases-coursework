@@ -59,8 +59,9 @@ type facetAux struct {
 }
 
 type rdfAux struct {
-	subject, object termAux
-	entityI         index
+	subject termAux
+	object  termAux
+	entityI index
 }
 
 type termAux struct {
@@ -96,16 +97,16 @@ var (
 	}
 
 	facetTypeToDecoration = []rdf.Decoration{
-		rdf.None,   // intFT
-		rdf.None,   // floatFT
-		rdf.Quotes, // stringFT
+		rdf.None,   // intFt
+		rdf.None,   // floatFt
+		rdf.Quotes, // stringFt
 	}
 
-	dtToDecoration = []rdf.Decoration{
-		rdf.Quotes, // intDT
-		rdf.Quotes, // floatDT
-		rdf.None,   // idDT
-		rdf.Quotes, // stringDT
+	dataTypeToDecoration = []rdf.Decoration{
+		rdf.Quotes, // intDt
+		rdf.Quotes, // floatDt
+		rdf.None,   // idDt
+		rdf.Quotes, // stringDt
 	}
 )
 
@@ -261,26 +262,31 @@ func (file *File) transform(
 			return file.wrap(err)
 		}
 
-		for i, f := range file.Facets {
-			fAux := fsAux[i]
-			add(
-				esFs,
-				f.Entity+record[fAux.entity],
-				f.Key,
-				rdf.NewTerm(
-					record[fAux.value],
-					facetTypeToDecoration[fAux.ft],
-				),
-			)
-		}
-
-		file.writeRDFs(output, esFs, record, rsAux)
+		file.saveFacets(esFs, record, fsAux)
+		file.writeRdfs(output, esFs, record, rsAux)
 	}
 
 	return nil
 }
 
-func (file *File) writeRDFs(
+func (file *File) saveFacets(
+	esFs entitiesFacets,
+	record []string,
+	fsAux []facetAux,
+) {
+	for i, f := range file.Facets {
+		fAux := fsAux[i]
+
+		add(
+			esFs,
+			entityKey(f.Entity, record[fAux.entity]),
+			f.Key,
+			rdf.NewTerm(record[fAux.value], facetTypeToDecoration[fAux.ft]),
+		)
+	}
+}
+
+func (file *File) writeRdfs(
 	output *os.File,
 	esFs entitiesFacets,
 	record []string,
@@ -303,13 +309,13 @@ func (file *File) writeRDFs(
 
 		var fs []*rdf.Facet = nil
 		if r.FacetEntity != "" {
-			fs = convert(esFs[r.FacetEntity+record[rAux.entityI]])
+			fs = convert(esFs[entityKey(r.FacetEntity, record[rAux.entityI])])
 		}
 
 		r := rdf.NewRDF(
-			rdf.NewTerm(subject, dtToDecoration[rAux.subject.dt]),
+			rdf.NewTerm(subject, dataTypeToDecoration[rAux.subject.dt]),
 			rdf.NewTerm(r.Predicat, rdf.AngleBrackets),
-			rdf.NewTerm(object, dtToDecoration[rAux.object.dt]),
+			rdf.NewTerm(object, dataTypeToDecoration[rAux.object.dt]),
 			fs,
 		)
 
@@ -408,7 +414,7 @@ func (file *File) getRdfsAux(
 
 func transform(dt dataType, name, value string) string {
 	if dt == idDt {
-		return "_:" + name + value
+		return "_:" + entityKey(name, value)
 	}
 	return value
 }
@@ -428,4 +434,8 @@ func convert(m map[string]*rdf.Term) []*rdf.Facet {
 		s = append(s, rdf.NewFacet(key, term))
 	}
 	return s
+}
+
+func entityKey(name, value string) string {
+	return name + value
 }

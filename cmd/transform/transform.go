@@ -9,30 +9,21 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var (
-	configPath   string
-	datasetsPath string
-)
+var configPath, datasetsPath string
 
 func init() {
 	const (
-		configUsage = "path to the YAML configuration file"
-		configValue = "configs/transform.yml"
-
+		configUsage   = "path to the YAML configuration file"
+		configValue   = "configs/transform.yml"
 		datasetsUsage = "path to the datasets"
 		datasetsValue = "datasets"
 	)
 
 	flag.StringVar(&configPath, "config", configValue, configUsage)
-	flag.StringVar(&configPath, "c", configValue, configUsage+" (shorthand)")
+	flag.StringVar(&configPath, "c", configValue, configUsage)
 
 	flag.StringVar(&datasetsPath, "datasets", datasetsValue, datasetsUsage)
-	flag.StringVar(
-		&datasetsPath,
-		"d",
-		datasetsValue,
-		datasetsUsage+" (shorthand)",
-	)
+	flag.StringVar(&datasetsPath, "d", datasetsValue, datasetsUsage)
 }
 
 func main() {
