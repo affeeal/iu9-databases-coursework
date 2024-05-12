@@ -1,0 +1,61 @@
+---
+name: act-mooc
+delimiter: "\t"
+schema:
+  - name: ACTIONID
+    type: id
+  - name: USERID
+    type: id
+  - name: TARGETID
+    type: id
+  - name: TIMESTAMP
+    type: float # int, actually
+  - name: LABEL
+    type: int 
+  - name: FEATURE0
+    type: float
+  - name: FEATURE1
+    type: float
+  - name: FEATURE2
+    type: float
+  - name: FEATURE3
+    type: float
+files:
+  - name: mooc_action_labels.tsv
+    facets:
+      - entity: ACTIONID
+        key: label
+        value: LABEL
+        type: int
+  - name: mooc_action_features.tsv
+    facets:
+      - entity: ACTIONID
+        key: feature0
+        value: FEATURE0
+        type: float
+      - entity: ACTIONID
+        key: feature1
+        value: FEATURE1
+        type: float
+      - entity: ACTIONID
+        key: feature2
+        value: FEATURE2
+        type: float
+      - entity: ACTIONID
+        key: feature3
+        value: FEATURE3
+        type: float
+  - name: mooc_actions.tsv
+    facets:
+      - entity: ACTIONID
+        key: timestamp
+        value: TIMESTAMP
+        type: float # int, actually
+    RDFs:
+      - subject: USERID
+        predicat: performs
+        object: ACTIONID
+        facetEntity: ACTIONID
+      - subject: ACTIONID
+        predicat: on
+        object: TARGETID

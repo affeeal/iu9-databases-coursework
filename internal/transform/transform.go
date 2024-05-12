@@ -4,16 +4,14 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"sync"
 
 	"github.com/affeeal/iu9-database-coursework/internal/transform/rdf"
 	"github.com/pkg/errors"
+	"gopkg.in/yaml.v3"
 )
-
-type Config struct {
-	Datasets []Dataset `yaml:"datasets"`
-}
 
 type Dataset struct {
 	Name      string `yaml:"name"`
@@ -70,6 +68,12 @@ type termAux struct {
 }
 
 const (
+	configName = "transform.yml"
+	outputName = "transformed.rdf"
+	sourceName = "source"
+)
+
+const (
 	intFt facetType = iota
 	floatFt
 	stringFt
@@ -110,34 +114,64 @@ var (
 	}
 )
 
-func Transform(datasetsPath string, config *Config) {
-	var wg sync.WaitGroup
-	wg.Add(len(config.Datasets))
+func ProcessDatasets(datasetsPath string) error {
+	entires, err := os.ReadDir(datasetsPath)
+	if err != nil {
+		return err
+	}
 
-	for _, ds := range config.Datasets {
-		go func(ds *Dataset) {
+	var wg sync.WaitGroup
+	wg.Add(len(entires))
+
+	for _, entry := range entires {
+		if !entry.IsDir() {
+			wg.Done()
+			continue
+		}
+
+		go func(datasetPath string) {
 			defer wg.Done()
 
-			if err := ds.transform(datasetsPath); err != nil {
-				fmt.Println(err)
+			if err := ProcessDataset(datasetPath); err != nil {
+				log.Println(err)
 				return
 			}
-		}(&ds)
+
+			fmt.Printf("successfully processed %s\n", datasetPath)
+		}(datasetsPath + "/" + entry.Name())
 	}
 
 	wg.Wait()
+
+	return nil
 }
 
-func (ds *Dataset) transform(datasetsPath string) error {
-	sourcePath := fmt.Sprintf("%s/%s/source/", datasetsPath, ds.Name)
-	outputName := fmt.Sprintf(
-		"%s/%s/transformed/%s.rdf",
-		datasetsPath,
-		ds.Name,
-		ds.Name,
-	)
+func ProcessDataset(datasetPath string) error {
+	configFile, err := os.Open(datasetPath + "/" + configName)
+	if err != nil {
+		return err
+	}
+	defer configFile.Close()
 
-	output, err := os.Create(outputName)
+	decoder := yaml.NewDecoder(configFile)
+	decoder.KnownFields(true)
+
+	var ds Dataset
+	if err = decoder.Decode(&ds); err != nil {
+		return err
+	}
+
+	if err = ds.Process(datasetPath); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ds *Dataset) Process(datasetPath string) error {
+	sourcePath := datasetPath + "/" + sourceName
+
+	output, err := os.Create(datasetPath + "/" + outputName)
 	if err != nil {
 		return ds.wrap(err)
 	}
@@ -224,7 +258,7 @@ func (file *File) transform(
 	delimiter, comment rune,
 	schema map[string]dataType,
 ) error {
-	source, err := os.Open(sourcePath + file.Name)
+	source, err := os.Open(sourcePath + "/" + file.Name)
 	if err != nil {
 		return file.wrap(err)
 	}
