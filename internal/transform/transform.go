@@ -17,15 +17,15 @@ type Dataset struct {
 	Name      string `yaml:"name"`
 	Delimiter string `yaml:"delimiter"`
 	Comment   string `yaml:"comment"`
-	Schema    []struct {
-		Name string `yaml:"name"`
-		Type string `yaml:"type"`
-	}
-	Files []File `yaml:"files"`
+	Files     []File `yaml:"files"`
 }
 
 type File struct {
-	Name   string  `yaml:"name"`
+	Name   string `yaml:"name"`
+	Schema []struct {
+		Name string `yaml:"name"`
+		Type string `yaml:"type"`
+	}
 	Facets []Facet `yaml:"facets"`
 	RDFs   []RDF   `yaml:"RDFs"`
 }
@@ -187,21 +187,9 @@ func (ds *Dataset) Process(datasetPath string) error {
 		return ds.wrap(err)
 	}
 
-	schema, err := ds.transformSchema()
-	if err != nil {
-		return ds.wrap(err)
-	}
-
 	esFs := make(entitiesFacets)
 	for _, file := range ds.Files {
-		if err = file.transform(
-			esFs,
-			output,
-			sourcePath,
-			delimiter,
-			comment,
-			schema,
-		); err != nil {
+		if err = file.transform(esFs, output, sourcePath, delimiter, comment); err != nil {
 			return ds.wrap(err)
 		}
 	}
@@ -236,28 +224,17 @@ func validateSymbol(name, rawSym string, defaultSym rune) (rune, error) {
 	return sym, nil
 }
 
-func (ds *Dataset) transformSchema() (map[string]dataType, error) {
-	schema := make(map[string]dataType)
-
-	for _, item := range ds.Schema {
-		dt, ok := dataTypes[item.Type]
-		if !ok {
-			return nil, errors.New("undefined data type " + item.Type)
-		}
-
-		schema[item.Name] = dt
-	}
-
-	return schema, nil
-}
-
 func (file *File) transform(
 	esFs entitiesFacets,
 	output *os.File,
 	sourcePath string,
 	delimiter, comment rune,
-	schema map[string]dataType,
 ) error {
+	schema, err := file.transformSchema()
+	if err != nil {
+		return err
+	}
+
 	source, err := os.Open(sourcePath + "/" + file.Name)
 	if err != nil {
 		return file.wrap(err)
@@ -301,6 +278,21 @@ func (file *File) transform(
 	}
 
 	return nil
+}
+
+func (file *File) transformSchema() (map[string]dataType, error) {
+	schema := make(map[string]dataType)
+
+	for _, item := range file.Schema {
+		dt, ok := dataTypes[item.Type]
+		if !ok {
+			return nil, errors.New("undefined schema data type " + item.Type)
+		}
+
+		schema[item.Name] = dt
+	}
+
+	return schema, nil
 }
 
 func (file *File) saveFacets(

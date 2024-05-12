@@ -1,33 +1,30 @@
 ---
 name: act-mooc
 delimiter: "\t"
-schema:
-  - name: ACTIONID
-    type: id
-  - name: USERID
-    type: id
-  - name: TARGETID
-    type: id
-  - name: TIMESTAMP
-    type: float # int, actually
-  - name: LABEL
-    type: int 
-  - name: FEATURE0
-    type: float
-  - name: FEATURE1
-    type: float
-  - name: FEATURE2
-    type: float
-  - name: FEATURE3
-    type: float
 files:
   - name: mooc_action_labels.tsv
+    schema:
+      - name: ACTIONID
+        type: id
+      - name: LABEL
+        type: int
     facets:
       - entity: ACTIONID
         key: label
         value: LABEL
         type: int
   - name: mooc_action_features.tsv
+    schema:
+      - name: ACTIONID
+        type: id
+      - name: FEATURE0
+        type: float
+      - name: FEATURE1
+        type: float
+      - name: FEATURE2
+        type: float
+      - name: FEATURE3
+        type: float
     facets:
       - entity: ACTIONID
         key: feature0
@@ -46,11 +43,20 @@ files:
         value: FEATURE3
         type: float
   - name: mooc_actions.tsv
+    schema:
+      - name: ACTIONID
+        type: id
+      - name: USERID
+        type: id
+      - name: TARGETID
+        type: id
+      - name: TIMESTAMP
+        type: float
     facets:
       - entity: ACTIONID
         key: timestamp
         value: TIMESTAMP
-        type: float # int, actually
+        type: float
     RDFs:
       - subject: USERID
         predicat: performs
