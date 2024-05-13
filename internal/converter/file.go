@@ -14,45 +14,30 @@ type index uint8
 type dataType uint8
 
 type meta struct {
+	raw *config.Record
+	dt  dataType
+}
+
+type term struct {
+	i     index
 	dt    dataType
 	extra map[string]string
 }
 
-type iTerm interface {
-	getI() index
-	getDt() dataType
-}
-
-type term struct {
-	i  index
-	dt dataType
-}
-
-func (t term) getI() index {
-	return t.i
-}
-
-func (t term) getDt() dataType {
-	return t.dt
-}
-
-type idTerm struct {
-	term
-	prefix string
-}
-
 type preparedFacet struct {
 	raw    *config.Facet
-	entity *idTerm
+	entity *term
 	value  *term
 }
 
 type preparedRdf struct {
 	raw         *config.Rdf
-	subject     *idTerm
-	object      iTerm
-	facetEntity *idTerm
+	subject     *term
+	object      *term
+	facetEntity *term
 }
+
+const prefix = "prefix"
 
 const (
 	intDt dataType = iota
@@ -154,7 +139,7 @@ func transformSchema(configSchema []config.Record) (map[string]meta, error) {
 			return nil, errors.New("undefined schema type " + record.Type)
 		}
 
-		schema[record.Name] = meta{dt: dt, extra: record.Extra}
+		schema[record.Name] = meta{raw: &record, dt: dt}
 	}
 
 	return schema, nil
@@ -168,26 +153,14 @@ func transformFacets(
 	facets := make([]preparedFacet, 0, len(configFacets))
 
 	for _, cf := range configFacets {
-		iEntity, err := newITerm(cf.Entity, schema, indices)
+		entity, err := newTerm(cf.Entity, schema, indices)
 		if err != nil {
 			return nil, err
-		}
-		entity, ok := iEntity.(*idTerm)
-		if !ok {
-			return nil, errors.New(
-				"facet entity " + cf.Entity + " must be an idTerm",
-			)
 		}
 
-		iValue, err := newITerm(cf.Value, schema, indices)
+		value, err := newTerm(cf.Value, schema, indices)
 		if err != nil {
 			return nil, err
-		}
-		value, ok := iValue.(*term)
-		if !ok {
-			return nil, errors.New(
-				"facet value " + cf.Value + " must be a term",
-			)
 		}
 
 		facets = append(
@@ -207,33 +180,21 @@ func transformRdfs(
 	rs := make([]preparedRdf, 0, len(configRdfs))
 
 	for _, r := range configRdfs {
-		iSubject, err := newITerm(r.Subject, schema, indices)
-		if err != nil {
-			return nil, err
-		}
-		subject, ok := iSubject.(*idTerm)
-		if !ok {
-			return nil, errors.New(
-				"RDF subject " + r.Subject + " must be an idTerm",
-			)
-		}
-
-		iObject, err := newITerm(r.Object, schema, indices)
+		subject, err := newTerm(r.Subject, schema, indices)
 		if err != nil {
 			return nil, err
 		}
 
-		var facetEntity *idTerm = nil
+		object, err := newTerm(r.Object, schema, indices)
+		if err != nil {
+			return nil, err
+		}
+
+		var facetEntity *term = nil
 		if r.FacetEntity != "" {
-			iFacetEntity, err := newITerm(r.FacetEntity, schema, indices)
+			facetEntity, err = newTerm(r.FacetEntity, schema, indices)
 			if err != nil {
 				return nil, err
-			}
-			facetEntity, ok = iFacetEntity.(*idTerm)
-			if !ok {
-				return nil, errors.New(
-					"RDF facet entity " + r.FacetEntity + " must be an idTerm",
-				)
 			}
 		}
 
@@ -242,7 +203,7 @@ func transformRdfs(
 			preparedRdf{
 				raw:         &r,
 				subject:     subject,
-				object:      iObject,
+				object:      object,
 				facetEntity: facetEntity,
 			},
 		)
@@ -251,11 +212,11 @@ func transformRdfs(
 	return rs, nil
 }
 
-func newITerm(
+func newTerm(
 	name string,
 	schema map[string]meta,
 	indices map[string]index,
-) (iTerm, error) {
+) (*term, error) {
 	i, ok := indices[name]
 	if !ok {
 		return nil, errors.New("undefined index for name " + name)
@@ -266,23 +227,14 @@ func newITerm(
 		return nil, errors.New("undefined schema meta for " + name)
 	}
 
-	if m.dt != idDt {
-		return &term{i: i, dt: m.dt}, nil
-	}
-
-	prefix, ok := m.extra["prefix"]
-	if !ok {
-		return nil, errors.New("undefined prefix for " + name)
-	}
-
-	return &idTerm{term: term{i: i, dt: m.dt}, prefix: prefix}, nil
+	return &term{i: i, dt: m.dt, extra: m.raw.Extra}, nil
 }
 
 func saveFacets(ef entitiesFacets, fs []preparedFacet, record []string) {
 	for _, f := range fs {
 		add(
 			ef,
-			entityKey(f.entity.prefix, record[f.entity.i]),
+			entityKey(f.entity.extra[prefix], record[f.entity.i]),
 			f.raw.Key,
 			rdf.NewTerm(record[f.value.i], facetDecorations[f.value.dt]),
 		)
@@ -296,26 +248,30 @@ func writeRdfs(
 	record []string,
 ) error {
 	for _, r := range rs {
-		subject := blankNode(entityKey(r.subject.prefix, record[r.subject.i]))
+		subject := blankNode(
+			entityKey(r.subject.extra[prefix], record[r.subject.i]),
+		)
 
 		var object string
-		if idObject, ok := r.object.(*idTerm); ok {
-			object = blankNode(entityKey(idObject.prefix, record[idObject.i]))
+		if r.object.dt == idDt {
+			object = blankNode(
+				entityKey(r.object.extra[prefix], record[r.object.i]),
+			)
 		} else {
-			object = record[r.object.getI()]
+			object = record[r.object.i]
 		}
 
 		var fs []*rdf.Facet = nil
 		if r.facetEntity != nil {
 			fs = convert(
-				ef[entityKey(r.facetEntity.prefix, record[r.facetEntity.i])],
+				ef[entityKey(r.facetEntity.extra[prefix], record[r.facetEntity.i])],
 			)
 		}
 
 		r := rdf.NewRdf(
 			rdf.NewTerm(subject, rdf.None),
 			rdf.NewTerm(r.raw.Predicat, rdf.AngleBrackets),
-			rdf.NewTerm(object, termDecorations[r.object.getDt()]),
+			rdf.NewTerm(object, termDecorations[r.object.dt]),
 			fs,
 		)
 
