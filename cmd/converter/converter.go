@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/affeeal/iu9-database-coursework/internal/transform"
+	"github.com/affeeal/iu9-database-coursework/internal/converter"
 )
 
 var datasetsPath string
@@ -21,5 +21,5 @@ func init() {
 func main() {
 	flag.Parse()
 
-	transform.ProcessDatasets(datasetsPath)
+	converter.ProcessDatasets(datasetsPath)
 }

@@ -29,7 +29,7 @@ func (term *Term) String() string {
 		return "<" + term.val + ">"
 	}
 
-	panic("bad term decoration type") // won't be called
+	panic("bad term decoration type")
 }
 
 type Facet struct {
@@ -41,20 +41,20 @@ func NewFacet(key string, term *Term) *Facet {
 	return &Facet{key: key, term: term}
 }
 
-type RDF struct {
+type Rdf struct {
 	subject  *Term
 	predicat *Term
 	object   *Term
 	facets   []*Facet
 }
 
-func NewRDF(
+func NewRdf(
 	subject *Term,
 	predicat *Term,
 	object *Term,
 	facets []*Facet,
-) *RDF {
-	return &RDF{
+) *Rdf {
+	return &Rdf{
 		subject:  subject,
 		predicat: predicat,
 		object:   object,
@@ -62,7 +62,7 @@ func NewRDF(
 	}
 }
 
-func (triple *RDF) String() string {
+func (triple *Rdf) String() string {
 	facets := ""
 	if len(triple.facets) > 0 {
 		facets = "("
@@ -84,6 +84,6 @@ func (triple *RDF) String() string {
 	)
 }
 
-func (triple *RDF) Stringln() string {
+func (triple *Rdf) Stringln() string {
 	return triple.String() + "\n"
 }
