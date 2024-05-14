@@ -20,7 +20,7 @@ const (
 	srcName     = "src"
 
 	configName = "convert.yml"
-	outName    = "converted.rdf"
+	outName    = "out.rdf"
 )
 
 func ProcessDatasets(datasetsPath string) error {

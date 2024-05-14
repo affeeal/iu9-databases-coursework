@@ -248,6 +248,10 @@ func writeRdfs(
 	record []string,
 ) error {
 	for _, r := range rs {
+		if record[r.object.i] == "" {
+			continue
+		}
+
 		subject := blankNode(
 			entityKey(r.subject.extra[prefix], record[r.subject.i]),
 		)
