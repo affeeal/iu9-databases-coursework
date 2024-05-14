@@ -396,499 +396,499 @@ files:
         predicat: time_step
         object: Time step
       - subject: txId
-        predicat: local_feature_1
+        predicat: Local_feature_1
         object: Local_feature_1
       - subject: txId
-        predicat: local_feature_2
+        predicat: Local_feature_2
         object: Local_feature_2
       - subject: txId
-        predicat: local_feature_3
+        predicat: Local_feature_3
         object: Local_feature_3
       - subject: txId
-        predicat: local_feature_4
+        predicat: Local_feature_4
         object: Local_feature_4
       - subject: txId
-        predicat: local_feature_5
+        predicat: Local_feature_5
         object: Local_feature_5
       - subject: txId
-        predicat: local_feature_6
+        predicat: Local_feature_6
         object: Local_feature_6
       - subject: txId
-        predicat: local_feature_7
+        predicat: Local_feature_7
         object: Local_feature_7
       - subject: txId
-        predicat: local_feature_8
+        predicat: Local_feature_8
         object: Local_feature_8
       - subject: txId
-        predicat: local_feature_9
+        predicat: Local_feature_9
         object: Local_feature_9
       - subject: txId
-        predicat: local_feature_10
+        predicat: Local_feature_10
         object: Local_feature_10
       - subject: txId
-        predicat: local_feature_11
+        predicat: Local_feature_11
         object: Local_feature_11
       - subject: txId
-        predicat: local_feature_12
+        predicat: Local_feature_12
         object: Local_feature_12
       - subject: txId
-        predicat: local_feature_13
+        predicat: Local_feature_13
         object: Local_feature_13
       - subject: txId
-        predicat: local_feature_14
+        predicat: Local_feature_14
         object: Local_feature_14
       - subject: txId
-        predicat: local_feature_15
+        predicat: Local_feature_15
         object: Local_feature_15
       - subject: txId
-        predicat: local_feature_16
+        predicat: Local_feature_16
         object: Local_feature_16
       - subject: txId
-        predicat: local_feature_17
+        predicat: Local_feature_17
         object: Local_feature_17
       - subject: txId
-        predicat: local_feature_18
+        predicat: Local_feature_18
         object: Local_feature_18
       - subject: txId
-        predicat: local_feature_19
+        predicat: Local_feature_19
         object: Local_feature_19
       - subject: txId
-        predicat: local_feature_20
+        predicat: Local_feature_20
         object: Local_feature_20
       - subject: txId
-        predicat: local_feature_21
+        predicat: Local_feature_21
         object: Local_feature_21
       - subject: txId
-        predicat: local_feature_22
+        predicat: Local_feature_22
         object: Local_feature_22
       - subject: txId
-        predicat: local_feature_23
+        predicat: Local_feature_23
         object: Local_feature_23
       - subject: txId
-        predicat: local_feature_24
+        predicat: Local_feature_24
         object: Local_feature_24
       - subject: txId
-        predicat: local_feature_25
+        predicat: Local_feature_25
         object: Local_feature_25
       - subject: txId
-        predicat: local_feature_26
+        predicat: Local_feature_26
         object: Local_feature_26
       - subject: txId
-        predicat: local_feature_27
+        predicat: Local_feature_27
         object: Local_feature_27
       - subject: txId
-        predicat: local_feature_28
+        predicat: Local_feature_28
         object: Local_feature_28
       - subject: txId
-        predicat: local_feature_29
+        predicat: Local_feature_29
         object: Local_feature_29
       - subject: txId
-        predicat: local_feature_30
+        predicat: Local_feature_30
         object: Local_feature_30
       - subject: txId
-        predicat: local_feature_31
+        predicat: Local_feature_31
         object: Local_feature_31
       - subject: txId
-        predicat: local_feature_32
+        predicat: Local_feature_32
         object: Local_feature_32
       - subject: txId
-        predicat: local_feature_33
+        predicat: Local_feature_33
         object: Local_feature_33
       - subject: txId
-        predicat: local_feature_34
+        predicat: Local_feature_34
         object: Local_feature_34
       - subject: txId
-        predicat: local_feature_35
+        predicat: Local_feature_35
         object: Local_feature_35
       - subject: txId
-        predicat: local_feature_36
+        predicat: Local_feature_36
         object: Local_feature_36
       - subject: txId
-        predicat: local_feature_37
+        predicat: Local_feature_37
         object: Local_feature_37
       - subject: txId
-        predicat: local_feature_38
+        predicat: Local_feature_38
         object: Local_feature_38
       - subject: txId
-        predicat: local_feature_39
+        predicat: Local_feature_39
         object: Local_feature_39
       - subject: txId
-        predicat: local_feature_40
+        predicat: Local_feature_40
         object: Local_feature_40
       - subject: txId
-        predicat: local_feature_41
+        predicat: Local_feature_41
         object: Local_feature_41
       - subject: txId
-        predicat: local_feature_42
+        predicat: Local_feature_42
         object: Local_feature_42
       - subject: txId
-        predicat: local_feature_43
+        predicat: Local_feature_43
         object: Local_feature_43
       - subject: txId
-        predicat: local_feature_44
+        predicat: Local_feature_44
         object: Local_feature_44
       - subject: txId
-        predicat: local_feature_45
+        predicat: Local_feature_45
         object: Local_feature_45
       - subject: txId
-        predicat: local_feature_46
+        predicat: Local_feature_46
         object: Local_feature_46
       - subject: txId
-        predicat: local_feature_47
+        predicat: Local_feature_47
         object: Local_feature_47
       - subject: txId
-        predicat: local_feature_48
+        predicat: Local_feature_48
         object: Local_feature_48
       - subject: txId
-        predicat: local_feature_49
+        predicat: Local_feature_49
         object: Local_feature_49
       - subject: txId
-        predicat: local_feature_50
+        predicat: Local_feature_50
         object: Local_feature_50
       - subject: txId
-        predicat: local_feature_51
+        predicat: Local_feature_51
         object: Local_feature_51
       - subject: txId
-        predicat: local_feature_52
+        predicat: Local_feature_52
         object: Local_feature_52
       - subject: txId
-        predicat: local_feature_53
+        predicat: Local_feature_53
         object: Local_feature_53
       - subject: txId
-        predicat: local_feature_54
+        predicat: Local_feature_54
         object: Local_feature_54
       - subject: txId
-        predicat: local_feature_55
+        predicat: Local_feature_55
         object: Local_feature_55
       - subject: txId
-        predicat: local_feature_56
+        predicat: Local_feature_56
         object: Local_feature_56
       - subject: txId
-        predicat: local_feature_57
+        predicat: Local_feature_57
         object: Local_feature_57
       - subject: txId
-        predicat: local_feature_58
+        predicat: Local_feature_58
         object: Local_feature_58
       - subject: txId
-        predicat: local_feature_59
+        predicat: Local_feature_59
         object: Local_feature_59
       - subject: txId
-        predicat: local_feature_60
+        predicat: Local_feature_60
         object: Local_feature_60
       - subject: txId
-        predicat: local_feature_61
+        predicat: Local_feature_61
         object: Local_feature_61
       - subject: txId
-        predicat: local_feature_62
+        predicat: Local_feature_62
         object: Local_feature_62
       - subject: txId
-        predicat: local_feature_63
+        predicat: Local_feature_63
         object: Local_feature_63
       - subject: txId
-        predicat: local_feature_64
+        predicat: Local_feature_64
         object: Local_feature_64
       - subject: txId
-        predicat: local_feature_65
+        predicat: Local_feature_65
         object: Local_feature_65
       - subject: txId
-        predicat: local_feature_66
+        predicat: Local_feature_66
         object: Local_feature_66
       - subject: txId
-        predicat: local_feature_67
+        predicat: Local_feature_67
         object: Local_feature_67
       - subject: txId
-        predicat: local_feature_68
+        predicat: Local_feature_68
         object: Local_feature_68
       - subject: txId
-        predicat: local_feature_69
+        predicat: Local_feature_69
         object: Local_feature_69
       - subject: txId
-        predicat: local_feature_70
+        predicat: Local_feature_70
         object: Local_feature_70
       - subject: txId
-        predicat: local_feature_71
+        predicat: Local_feature_71
         object: Local_feature_71
       - subject: txId
-        predicat: local_feature_72
+        predicat: Local_feature_72
         object: Local_feature_72
       - subject: txId
-        predicat: local_feature_73
+        predicat: Local_feature_73
         object: Local_feature_73
       - subject: txId
-        predicat: local_feature_74
+        predicat: Local_feature_74
         object: Local_feature_74
       - subject: txId
-        predicat: local_feature_75
+        predicat: Local_feature_75
         object: Local_feature_75
       - subject: txId
-        predicat: local_feature_76
+        predicat: Local_feature_76
         object: Local_feature_76
       - subject: txId
-        predicat: local_feature_77
+        predicat: Local_feature_77
         object: Local_feature_77
       - subject: txId
-        predicat: local_feature_78
+        predicat: Local_feature_78
         object: Local_feature_78
       - subject: txId
-        predicat: local_feature_79
+        predicat: Local_feature_79
         object: Local_feature_79
       - subject: txId
-        predicat: local_feature_80
+        predicat: Local_feature_80
         object: Local_feature_80
       - subject: txId
-        predicat: local_feature_81
+        predicat: Local_feature_81
         object: Local_feature_81
       - subject: txId
-        predicat: local_feature_82
+        predicat: Local_feature_82
         object: Local_feature_82
       - subject: txId
-        predicat: local_feature_83
+        predicat: Local_feature_83
         object: Local_feature_83
       - subject: txId
-        predicat: local_feature_84
+        predicat: Local_feature_84
         object: Local_feature_84
       - subject: txId
-        predicat: local_feature_85
+        predicat: Local_feature_85
         object: Local_feature_85
       - subject: txId
-        predicat: local_feature_86
+        predicat: Local_feature_86
         object: Local_feature_86
       - subject: txId
-        predicat: local_feature_87
+        predicat: Local_feature_87
         object: Local_feature_87
       - subject: txId
-        predicat: local_feature_88
+        predicat: Local_feature_88
         object: Local_feature_88
       - subject: txId
-        predicat: local_feature_89
+        predicat: Local_feature_89
         object: Local_feature_89
       - subject: txId
-        predicat: local_feature_90
+        predicat: Local_feature_90
         object: Local_feature_90
       - subject: txId
-        predicat: local_feature_91
+        predicat: Local_feature_91
         object: Local_feature_91
       - subject: txId
-        predicat: local_feature_92
+        predicat: Local_feature_92
         object: Local_feature_92
       - subject: txId
-        predicat: local_feature_93
+        predicat: Local_feature_93
         object: Local_feature_93
       - subject: txId
-        predicat: aggregate_feature_1
+        predicat: Aggregate_feature_1
         object: Aggregate_feature_1
       - subject: txId
-        predicat: aggregate_feature_2
+        predicat: Aggregate_feature_2
         object: Aggregate_feature_2
       - subject: txId
-        predicat: aggregate_feature_3
+        predicat: Aggregate_feature_3
         object: Aggregate_feature_3
       - subject: txId
-        predicat: aggregate_feature_4
+        predicat: Aggregate_feature_4
         object: Aggregate_feature_4
       - subject: txId
-        predicat: aggregate_feature_5
+        predicat: Aggregate_feature_5
         object: Aggregate_feature_5
       - subject: txId
-        predicat: aggregate_feature_6
+        predicat: Aggregate_feature_6
         object: Aggregate_feature_6
       - subject: txId
-        predicat: aggregate_feature_7
+        predicat: Aggregate_feature_7
         object: Aggregate_feature_7
       - subject: txId
-        predicat: aggregate_feature_8
+        predicat: Aggregate_feature_8
         object: Aggregate_feature_8
       - subject: txId
-        predicat: aggregate_feature_9
+        predicat: Aggregate_feature_9
         object: Aggregate_feature_9
       - subject: txId
-        predicat: aggregate_feature_10
+        predicat: Aggregate_feature_10
         object: Aggregate_feature_10
       - subject: txId
-        predicat: aggregate_feature_11
+        predicat: Aggregate_feature_11
         object: Aggregate_feature_11
       - subject: txId
-        predicat: aggregate_feature_12
+        predicat: Aggregate_feature_12
         object: Aggregate_feature_12
       - subject: txId
-        predicat: aggregate_feature_13
+        predicat: Aggregate_feature_13
         object: Aggregate_feature_13
       - subject: txId
-        predicat: aggregate_feature_14
+        predicat: Aggregate_feature_14
         object: Aggregate_feature_14
       - subject: txId
-        predicat: aggregate_feature_15
+        predicat: Aggregate_feature_15
         object: Aggregate_feature_15
       - subject: txId
-        predicat: aggregate_feature_16
+        predicat: Aggregate_feature_16
         object: Aggregate_feature_16
       - subject: txId
-        predicat: aggregate_feature_17
+        predicat: Aggregate_feature_17
         object: Aggregate_feature_17
       - subject: txId
-        predicat: aggregate_feature_18
+        predicat: Aggregate_feature_18
         object: Aggregate_feature_18
       - subject: txId
-        predicat: aggregate_feature_19
+        predicat: Aggregate_feature_19
         object: Aggregate_feature_19
       - subject: txId
-        predicat: aggregate_feature_20
+        predicat: Aggregate_feature_20
         object: Aggregate_feature_20
       - subject: txId
-        predicat: aggregate_feature_21
+        predicat: Aggregate_feature_21
         object: Aggregate_feature_21
       - subject: txId
-        predicat: aggregate_feature_22
+        predicat: Aggregate_feature_22
         object: Aggregate_feature_22
       - subject: txId
-        predicat: aggregate_feature_23
+        predicat: Aggregate_feature_23
         object: Aggregate_feature_23
       - subject: txId
-        predicat: aggregate_feature_24
+        predicat: Aggregate_feature_24
         object: Aggregate_feature_24
       - subject: txId
-        predicat: aggregate_feature_25
+        predicat: Aggregate_feature_25
         object: Aggregate_feature_25
       - subject: txId
-        predicat: aggregate_feature_26
+        predicat: Aggregate_feature_26
         object: Aggregate_feature_26
       - subject: txId
-        predicat: aggregate_feature_27
+        predicat: Aggregate_feature_27
         object: Aggregate_feature_27
       - subject: txId
-        predicat: aggregate_feature_28
+        predicat: Aggregate_feature_28
         object: Aggregate_feature_28
       - subject: txId
-        predicat: aggregate_feature_29
+        predicat: Aggregate_feature_29
         object: Aggregate_feature_29
       - subject: txId
-        predicat: aggregate_feature_30
+        predicat: Aggregate_feature_30
         object: Aggregate_feature_30
       - subject: txId
-        predicat: aggregate_feature_31
+        predicat: Aggregate_feature_31
         object: Aggregate_feature_31
       - subject: txId
-        predicat: aggregate_feature_32
+        predicat: Aggregate_feature_32
         object: Aggregate_feature_32
       - subject: txId
-        predicat: aggregate_feature_33
+        predicat: Aggregate_feature_33
         object: Aggregate_feature_33
       - subject: txId
-        predicat: aggregate_feature_34
+        predicat: Aggregate_feature_34
         object: Aggregate_feature_34
       - subject: txId
-        predicat: aggregate_feature_35
+        predicat: Aggregate_feature_35
         object: Aggregate_feature_35
       - subject: txId
-        predicat: aggregate_feature_36
+        predicat: Aggregate_feature_36
         object: Aggregate_feature_36
       - subject: txId
-        predicat: aggregate_feature_37
+        predicat: Aggregate_feature_37
         object: Aggregate_feature_37
       - subject: txId
-        predicat: aggregate_feature_38
+        predicat: Aggregate_feature_38
         object: Aggregate_feature_38
       - subject: txId
-        predicat: aggregate_feature_39
+        predicat: Aggregate_feature_39
         object: Aggregate_feature_39
       - subject: txId
-        predicat: aggregate_feature_40
+        predicat: Aggregate_feature_40
         object: Aggregate_feature_40
       - subject: txId
-        predicat: aggregate_feature_41
+        predicat: Aggregate_feature_41
         object: Aggregate_feature_41
       - subject: txId
-        predicat: aggregate_feature_42
+        predicat: Aggregate_feature_42
         object: Aggregate_feature_42
       - subject: txId
-        predicat: aggregate_feature_43
+        predicat: Aggregate_feature_43
         object: Aggregate_feature_43
       - subject: txId
-        predicat: aggregate_feature_44
+        predicat: Aggregate_feature_44
         object: Aggregate_feature_44
       - subject: txId
-        predicat: aggregate_feature_45
+        predicat: Aggregate_feature_45
         object: Aggregate_feature_45
       - subject: txId
-        predicat: aggregate_feature_46
+        predicat: Aggregate_feature_46
         object: Aggregate_feature_46
       - subject: txId
-        predicat: aggregate_feature_47
+        predicat: Aggregate_feature_47
         object: Aggregate_feature_47
       - subject: txId
-        predicat: aggregate_feature_48
+        predicat: Aggregate_feature_48
         object: Aggregate_feature_48
       - subject: txId
-        predicat: aggregate_feature_49
+        predicat: Aggregate_feature_49
         object: Aggregate_feature_49
       - subject: txId
-        predicat: aggregate_feature_50
+        predicat: Aggregate_feature_50
         object: Aggregate_feature_50
       - subject: txId
-        predicat: aggregate_feature_51
+        predicat: Aggregate_feature_51
         object: Aggregate_feature_51
       - subject: txId
-        predicat: aggregate_feature_52
+        predicat: Aggregate_feature_52
         object: Aggregate_feature_52
       - subject: txId
-        predicat: aggregate_feature_53
+        predicat: Aggregate_feature_53
         object: Aggregate_feature_53
       - subject: txId
-        predicat: aggregate_feature_54
+        predicat: Aggregate_feature_54
         object: Aggregate_feature_54
       - subject: txId
-        predicat: aggregate_feature_55
+        predicat: Aggregate_feature_55
         object: Aggregate_feature_55
       - subject: txId
-        predicat: aggregate_feature_56
+        predicat: Aggregate_feature_56
         object: Aggregate_feature_56
       - subject: txId
-        predicat: aggregate_feature_57
+        predicat: Aggregate_feature_57
         object: Aggregate_feature_57
       - subject: txId
-        predicat: aggregate_feature_58
+        predicat: Aggregate_feature_58
         object: Aggregate_feature_58
       - subject: txId
-        predicat: aggregate_feature_59
+        predicat: Aggregate_feature_59
         object: Aggregate_feature_59
       - subject: txId
-        predicat: aggregate_feature_60
+        predicat: Aggregate_feature_60
         object: Aggregate_feature_60
       - subject: txId
-        predicat: aggregate_feature_61
+        predicat: Aggregate_feature_61
         object: Aggregate_feature_61
       - subject: txId
-        predicat: aggregate_feature_62
+        predicat: Aggregate_feature_62
         object: Aggregate_feature_62
       - subject: txId
-        predicat: aggregate_feature_63
+        predicat: Aggregate_feature_63
         object: Aggregate_feature_63
       - subject: txId
-        predicat: aggregate_feature_64
+        predicat: Aggregate_feature_64
         object: Aggregate_feature_64
       - subject: txId
-        predicat: aggregate_feature_65
+        predicat: Aggregate_feature_65
         object: Aggregate_feature_65
       - subject: txId
-        predicat: aggregate_feature_66
+        predicat: Aggregate_feature_66
         object: Aggregate_feature_66
       - subject: txId
-        predicat: aggregate_feature_67
+        predicat: Aggregate_feature_67
         object: Aggregate_feature_67
       - subject: txId
-        predicat: aggregate_feature_68
+        predicat: Aggregate_feature_68
         object: Aggregate_feature_68
       - subject: txId
-        predicat: aggregate_feature_69
+        predicat: Aggregate_feature_69
         object: Aggregate_feature_69
       - subject: txId
-        predicat: aggregate_feature_70
+        predicat: Aggregate_feature_70
         object: Aggregate_feature_70
       - subject: txId
-        predicat: aggregate_feature_71
+        predicat: Aggregate_feature_71
         object: Aggregate_feature_71
       - subject: txId
-        predicat: aggregate_feature_72
+        predicat: Aggregate_feature_72
         object: Aggregate_feature_72
       - subject: txId
         predicat: in_txs_degree

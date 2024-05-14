@@ -19,8 +19,8 @@ const (
 	configsName = "configs"
 	srcName     = "src"
 
-	configName = "transform.yml"
-	outName    = "transformed.rdf"
+	configName = "convert.yml"
+	outName    = "converted.rdf"
 )
 
 func ProcessDatasets(datasetsPath string) error {

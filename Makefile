@@ -1,8 +1,8 @@
-DATASETS = elliptic++ act-mooc
+DATASETS = elliptic++ act-mooc roadNet-CA
 
 .PHONY: clean
 
 clean: $(DATASETS)
 
 $(DATASETS):
-	rm -f transform-$@ datasets/$@/transformed/$@.rdf
+	rm -f datasets/$@/converted.rdf
