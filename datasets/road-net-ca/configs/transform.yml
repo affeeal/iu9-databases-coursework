@@ -1,0 +1,15 @@
+---
+name: road-net-ca
+delimiter: "\t"
+comment: "#"
+files:
+  - name: roadNet-CA.txt
+    schema:
+      - name: FromNodeId
+        type: id
+      - name: ToNodeId
+        type: id
+    rdfs:
+      - subject: FromNodeId
+        predicat: successors
+        object: ToNodeId
