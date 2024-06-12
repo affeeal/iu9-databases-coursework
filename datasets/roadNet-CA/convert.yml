@@ -1,15 +1,14 @@
 ---
-name: road-net-ca
-delimiter: "\t"
-comment: "#"
 files:
   - name: roadNet-CA.txt
-    schema:
+    delimiter: "\t"
+    comment: "#"
+    declarations:
       - name: FromNodeId
         type: id
       - name: ToNodeId
         type: id
-    rdfs:
+    rdfs_to_write:
       - subject: FromNodeId
         predicat: successors
         object: ToNodeId

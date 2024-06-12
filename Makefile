@@ -1,8 +1,8 @@
-DATASETS = elliptic++ act-mooc roadNet-CA
+DATASETS = elliptic++ act-mooc roadNet-CA ERC20-stablecoins
 
 .PHONY: clean
 
 clean: $(DATASETS)
 
 $(DATASETS):
-	rm -f datasets/$@/converted.rdf
+	rm -f datasets/$@/output.rdf

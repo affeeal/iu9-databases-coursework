@@ -1,0 +1,127 @@
+---
+files:
+  - name: txs_classes.csv
+    declarations:
+      - name: txId
+        type: id
+      - name: class
+        type: int
+    rdfs_to_write:
+      - subject: txId
+        predicat: class
+        object: class
+  - name: txs_edgelist.csv
+    declarations:
+      - name: txId1
+        type: id
+      - name: txId2
+        type: id
+    rdfs_to_write:
+      - subject: txId1
+        predicat: successors
+        object: txId2
+  - name: txs_features.csv
+    declarations:
+      - name: txId
+        type: id
+      - name: Time step
+        type: int
+      - name: Local_feature_1 # TODO: process other local features?
+        type: float
+      - name: Aggregate_feature_1 # TODO: process other aggregate features?
+        type: float
+      - name: in_txs_degree
+        type: int
+      - name: out_txs_degree
+        type: int
+      - name: total_BTC
+        type: float
+      - name: fees
+        type: float
+      - name: size
+        type: int
+      - name: num_input_addresses
+        type: int
+      - name: num_output_addresses
+        type: int
+      - name: in_BTC_min
+        type: float
+      - name: in_BTC_max
+        type: float
+      - name: in_BTC_mean
+        type: float
+      - name: in_BTC_median
+        type: float
+      - name: in_BTC_total
+        type: float
+      - name: out_BTC_min
+        type: float
+      - name: out_BTC_max
+        type: float
+      - name: out_BTC_mean
+        type: float
+      - name: out_BTC_median
+        type: float
+      - name: out_BTC_total
+        type: float
+    rdfs_to_write:
+      - subject: txId
+        predicat: time_step
+        object: Time step
+      - subject: txId
+        predicat: Local_feature_1
+        object: Local_feature_1
+      - subject: txId
+        predicat: Aggregate_feature_1
+        object: Aggregate_feature_1
+      - subject: txId
+        predicat: in_txs_degree
+        object: in_txs_degree
+      - subject: txId
+        predicat: out_txs_degree
+        object: out_txs_degree
+      - subject: txId
+        predicat: total_BTC
+        object: total_BTC
+      - subject: txId
+        predicat: fees
+        object: fees
+      - subject: txId
+        predicat: size
+        object: size
+      - subject: txId
+        predicat: num_input_addresses
+        object: num_input_addresses
+      - subject: txId
+        predicat: num_output_addresses
+        object: num_output_addresses
+      - subject: txId
+        predicat: in_BTC_min
+        object: in_BTC_min
+      - subject: txId
+        predicat: in_BTC_max
+        object: in_BTC_max
+      - subject: txId
+        predicat: in_BTC_mean
+        object: in_BTC_mean
+      - subject: txId
+        predicat: in_BTC_median
+        object: in_BTC_median
+      - subject: txId
+        predicat: in_BTC_total
+        object: in_BTC_total
+      - subject: txId
+        predicat: out_BTC_min
+        object: out_BTC_min
+      - subject: txId
+        predicat: out_BTC_max
+        object: out_BTC_max
+      - subject: txId
+        predicat: out_BTC_mean
+        object: out_BTC_mean
+      - subject: txId
+        predicat: out_BTC_median
+        object: out_BTC_median
+      - subject: txId
+        predicat: out_BTC_total
+        object: out_BTC_total

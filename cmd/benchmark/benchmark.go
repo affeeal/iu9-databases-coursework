@@ -20,9 +20,9 @@ type cancelFunc func()
 type lstVar []string
 
 const (
-	defaultHost = "localhost"
-	defaultPort = 9080
-	maxRcvbytes = 1e+8
+	defaultHost         = "localhost"
+	defaultPort         = 9080
+	grpcMaxRecieveBytes = 1e+8
 )
 
 var (
@@ -51,7 +51,9 @@ func formTarget(host string, port uint) string {
 func getDgraphClient(host string, port uint) (*dgo.Dgraph, cancelFunc) {
 	conn, err := grpc.Dial(
 		formTarget(host, port),
-		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(maxRcvbytes)),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(grpcMaxRecieveBytes),
+		),
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 

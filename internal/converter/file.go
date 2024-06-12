@@ -5,124 +5,135 @@ import (
 	"io"
 	"os"
 
-	"github.com/affeeal/iu9-database-coursework/internal/converter/config"
-	"github.com/affeeal/iu9-database-coursework/internal/converter/rdf"
+	"github.com/affeeal/iu9-database-coursework/internal/rdf"
 	"github.com/pkg/errors"
 )
 
-type index uint8
-type dataType uint8
-
-type meta struct {
-	raw *config.Record
-	dt  dataType
+type File struct {
+	Name         string        `yaml:"name"`
+	Delimiter    string        `yaml:"delimiter"`
+	Comment      string        `yaml:"comment"`
+	Declarations []Declaration `yaml:"declarations"`
+	FacetsToSave []FacetRule   `yaml:"facets_to_save"`
+	RdfsToWrite  []RdfRule     `yaml:"rdfs_to_write"`
 }
 
-type term struct {
-	i     index
+type Declaration struct {
+	Name  string            `yaml:"name"`
+	Type  string            `yaml:"type"`
+	Extra map[string]string `yaml:"extra"`
+}
+
+type FacetRule struct {
+	Entity string `yaml:"entity"`
+	Key    string `yaml:"key"`
+	Value  string `yaml:"value"`
+}
+
+type RdfRule struct {
+	Subject     string `yaml:"subject"`
+	Predicat    string `yaml:"predicat"`
+	Object      string `yaml:"object"`
+	FacetEntity string `yaml:"facet_entity"`
+}
+
+type schemaType struct {
 	dt    dataType
 	extra map[string]string
 }
 
-type preparedFacet struct {
-	raw    *config.Facet
-	entity *term
-	value  *term
-}
-
-type preparedRdf struct {
-	raw         *config.Rdf
-	subject     *term
-	object      *term
-	facetEntity *term
-}
-
-const prefix = "prefix"
+type dataType uint
 
 const (
-	intDt dataType = iota
-	floatDt
-	stringDt
-	idDt
+	INT dataType = iota
+	FLOAT
+	STRING
+	ID
 )
 
 var (
 	dataTypes = map[string]dataType{
-		"int":    intDt,
-		"float":  floatDt,
-		"string": stringDt,
-		"id":     idDt,
-	}
-
-	facetTypes = map[string]dataType{
-		"int":    intDt,
-		"float":  floatDt,
-		"string": stringDt,
-	}
-
-	facetDecorations = []rdf.Decoration{
-		rdf.None,   // intDt
-		rdf.None,   // floatDt
-		rdf.Quotes, // stringDt
+		"int":    INT,
+		"float":  FLOAT,
+		"string": STRING,
+		"id":     ID,
 	}
 
 	termDecorations = []rdf.Decoration{
-		rdf.Quotes, // intDt
-		rdf.Quotes, // floatDt
-		rdf.Quotes, // stringDt
-		rdf.None,   // idDt
+		rdf.Quotes, // INT
+		rdf.Quotes, // FLOAT
+		rdf.Quotes, // STRING
+		rdf.None,   // ID
+	}
+
+	// NOTE: no ID
+	facetDecorations = []rdf.Decoration{
+		rdf.None,   // INT
+		rdf.None,   // FLOAT
+		rdf.Quotes, // STRING
 	}
 )
 
-func processFile(
-	file *config.File,
-	ef entitiesFacets,
-	out *os.File,
-	srcPath string,
-	del, com rune,
+const PREFIX_OPTION = "prefix"
+
+func (file *File) process(
+	entitiesFacets map[string]entityFacets,
+	output *os.File,
+	sourcesPath string,
 ) error {
-	src, err := os.Open(makePath(srcPath, file.Name))
+	schema, err := file.validate()
 	if err != nil {
 		return err
 	}
-	defer src.Close()
 
-	reader := csv.NewReader(src)
-	reader.Comma = del
-	reader.Comment = com
+	source, err := os.Open(makePath(sourcesPath, file.Name))
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	reader := csv.NewReader(source)
+
+	if file.Delimiter != "" {
+		delimiter, err := validateSymbol(file.Delimiter)
+		if err != nil {
+			return err
+		}
+
+		reader.Comma = delimiter
+	}
+
+	if file.Comment != "" {
+		comment, err := validateSymbol(file.Comment)
+		if err != nil {
+			return err
+		}
+
+		reader.Comment = comment
+	}
 
 	headers, err := reader.Read()
 	if err != nil {
 		return err
 	}
-	indices := make(map[string]index)
-	for i, header := range headers {
-		indices[header] = index(i)
-	}
 
-	schema, err := transformSchema(file.Schema)
-	if err != nil {
-		return err
-	}
-	fs, err := transformFacets(file.Facets, indices, schema)
-	if err != nil {
-		return err
-	}
-	rs, err := transformRdfs(file.Rdfs, indices, schema)
-	if err != nil {
-		return err
+	indices := make(map[string]uint)
+	for i, header := range headers {
+		indices[header] = uint(i)
 	}
 
 	for {
 		record, err := reader.Read()
 		if err == io.EOF {
 			break
-		} else if err != nil {
+		}
+
+		if err != nil {
 			return err
 		}
 
-		saveFacets(ef, fs, record)
-		if err = writeRdfs(out, ef, rs, record); err != nil {
+		file.saveFacets(entitiesFacets, record, schema, indices)
+		if err = file.writeRdfs(output, entitiesFacets, record, schema, indices); err != nil {
 			return err
 		}
 	}
@@ -130,153 +141,194 @@ func processFile(
 	return nil
 }
 
-func transformSchema(configSchema []config.Record) (map[string]meta, error) {
-	schema := make(map[string]meta)
+func (file *File) validate() (map[string]schemaType, error) {
+	schema, err := file.validateDeclarations()
+	if err != nil {
+		return nil, err
+	}
 
-	for _, record := range configSchema {
-		dt, ok := dataTypes[record.Type]
-		if !ok {
-			return nil, errors.New("undefined schema type " + record.Type)
-		}
+	if err = file.validateFacetRules(schema); err != nil {
+		return nil, err
+	}
 
-		schema[record.Name] = meta{raw: &record, dt: dt}
+	if err = file.validateRdfRules(schema); err != nil {
+		return nil, err
 	}
 
 	return schema, nil
 }
 
-func transformFacets(
-	configFacets []config.Facet,
-	indices map[string]index,
-	schema map[string]meta,
-) ([]preparedFacet, error) {
-	facets := make([]preparedFacet, 0, len(configFacets))
+func (file *File) validateDeclarations() (map[string]schemaType, error) {
+	schema := make(map[string]schemaType)
 
-	for _, cf := range configFacets {
-		entity, err := newTerm(cf.Entity, schema, indices)
-		if err != nil {
-			return nil, err
+	for _, decl := range file.Declarations {
+		if _, ok := schema[decl.Name]; ok {
+			return nil, errors.New("Schema name " + decl.Name + " redefinition")
 		}
 
-		value, err := newTerm(cf.Value, schema, indices)
-		if err != nil {
-			return nil, err
+		dt, ok := dataTypes[decl.Type]
+		if !ok {
+			return nil, errors.New("Unknown data type " + decl.Type)
 		}
 
-		facets = append(
-			facets,
-			preparedFacet{raw: &cf, entity: entity, value: value},
-		)
+		schema[decl.Name] = schemaType{
+			dt:    dt,
+			extra: decl.Extra,
+		}
 	}
 
-	return facets, nil
+	return schema, nil
 }
 
-func transformRdfs(
-	configRdfs []config.Rdf,
-	indices map[string]index,
-	schema map[string]meta,
-) ([]preparedRdf, error) {
-	rs := make([]preparedRdf, 0, len(configRdfs))
-
-	for _, r := range configRdfs {
-		subject, err := newTerm(r.Subject, schema, indices)
-		if err != nil {
-			return nil, err
+func (file *File) validateFacetRules(schema map[string]schemaType) error {
+	for _, rule := range file.FacetsToSave {
+		if err := validateId(schema, rule.Entity, "facet entity"); err != nil {
+			return err
 		}
 
-		object, err := newTerm(r.Object, schema, indices)
-		if err != nil {
-			return nil, err
+		if _, err := validateName(schema, rule.Value, "facet value"); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (file *File) validateRdfRules(schema map[string]schemaType) error {
+	for _, rule := range file.RdfsToWrite {
+		if err := validateId(schema, rule.Subject, "RDF subject"); err != nil {
+			return err
 		}
 
-		var facetEntity *term = nil
-		if r.FacetEntity != "" {
-			facetEntity, err = newTerm(r.FacetEntity, schema, indices)
-			if err != nil {
-				return nil, err
-			}
+		if _, err := validateName(schema, rule.Object, "RDF object"); err != nil {
+			return err
 		}
 
-		rs = append(
-			rs,
-			preparedRdf{
-				raw:         &r,
-				subject:     subject,
-				object:      object,
-				facetEntity: facetEntity,
-			},
-		)
-	}
-
-	return rs, nil
-}
-
-func newTerm(
-	name string,
-	schema map[string]meta,
-	indices map[string]index,
-) (*term, error) {
-	i, ok := indices[name]
-	if !ok {
-		return nil, errors.New("undefined index for name " + name)
-	}
-
-	m, ok := schema[name]
-	if !ok {
-		return nil, errors.New("undefined schema meta for " + name)
-	}
-
-	return &term{i: i, dt: m.dt, extra: m.raw.Extra}, nil
-}
-
-func saveFacets(ef entitiesFacets, fs []preparedFacet, record []string) {
-	for _, f := range fs {
-		add(
-			ef,
-			entityKey(f.entity.extra[prefix], record[f.entity.i]),
-			f.raw.Key,
-			rdf.NewTerm(record[f.value.i], facetDecorations[f.value.dt]),
-		)
-	}
-}
-
-func writeRdfs(
-	output *os.File,
-	ef entitiesFacets,
-	rs []preparedRdf,
-	record []string,
-) error {
-	for _, r := range rs {
-		if record[r.object.i] == "" {
+		if rule.FacetEntity == "" {
 			continue
 		}
 
-		subject := blankNode(
-			entityKey(r.subject.extra[prefix], record[r.subject.i]),
+		if err := validateId(schema, rule.FacetEntity, "RDF facet entity"); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func validateName(
+	schema map[string]schemaType,
+	name, role string,
+) (schemaType, error) {
+	st, ok := schema[name]
+	if !ok {
+		return st, errors.New("Unknown " + role + " " + name)
+	}
+
+	return st, nil
+}
+
+func validateId(schema map[string]schemaType, name, role string) error {
+	st, err := validateName(schema, name, role)
+	if err != nil {
+		return err
+	}
+
+	if st.dt != ID {
+		return errors.New(
+			"Data type of " + role + " " + name + " must be an id",
+		)
+	}
+
+	return nil
+}
+
+func validateSymbol(rawSymbol string) (rune, error) {
+	if len(rawSymbol) != 1 {
+		return 0, errors.New(
+			"Special symbol " + rawSymbol + " must be a single rune",
+		)
+	}
+
+	symbol := rune(rawSymbol[0])
+
+	if symbol == '\r' || symbol == '\n' {
+		return 0, errors.New(`Special symbol must not be \r, \n`)
+	}
+
+	return symbol, nil
+}
+
+func (file *File) saveFacets(
+	entitiesFacets map[string]entityFacets,
+	record []string,
+	schema map[string]schemaType,
+	indices map[string]uint,
+) {
+	for _, rule := range file.FacetsToSave {
+		addFacet(
+			entitiesFacets,
+			makeEntityKey(
+				schema[rule.Entity].extra[PREFIX_OPTION],
+				record[indices[rule.Entity]],
+			),
+			rule.Key,
+			rdf.NewTerm(
+				record[indices[rule.Value]],
+				facetDecorations[schema[rule.Value].dt],
+			),
+		)
+	}
+}
+
+func (file *File) writeRdfs(
+	output *os.File,
+	entitiesFacets map[string]entityFacets,
+	record []string,
+	schema map[string]schemaType,
+	indices map[string]uint,
+) error {
+	for _, rule := range file.RdfsToWrite {
+		objectIndex := indices[rule.Object]
+		if record[objectIndex] == "" {
+			continue
+		}
+
+		subject := makeBlankNode(
+			makeEntityKey(
+				schema[rule.Subject].extra[PREFIX_OPTION],
+				record[indices[rule.Subject]],
+			),
 		)
 
 		var object string
-		if r.object.dt == idDt {
-			object = blankNode(
-				entityKey(r.object.extra[prefix], record[r.object.i]),
+		objectType := schema[rule.Object]
+		if objectType.dt == ID {
+			object = makeBlankNode(
+				makeEntityKey(
+					objectType.extra[PREFIX_OPTION],
+					record[objectIndex],
+				),
 			)
 		} else {
-			object = record[r.object.i]
+			object = record[objectIndex]
 		}
 
-		var fs []*rdf.Facet = nil
-		if r.facetEntity != nil {
-			fs = convert(
-				ef[entityKey(r.facetEntity.extra[prefix], record[r.facetEntity.i])],
+		var facets []*rdf.Facet = nil
+		if rule.FacetEntity != "" {
+			entityKey := makeEntityKey(
+				schema[rule.FacetEntity].extra[PREFIX_OPTION],
+				record[indices[rule.FacetEntity]],
 			)
+
+			facets = convertFacets(entitiesFacets[entityKey])
 		}
 
 		r := rdf.NewRdf(
 			rdf.NewTerm(subject, rdf.None),
-			rdf.NewTerm(r.raw.Predicat, rdf.AngleBrackets),
-			rdf.NewTerm(object, termDecorations[r.object.dt]),
-			fs,
+			rdf.NewTerm(rule.Predicat, rdf.AngleBrackets),
+			rdf.NewTerm(object, termDecorations[objectType.dt]),
+			facets,
 		)
 
 		if _, err := output.WriteString(r.Stringln()); err != nil {
@@ -287,27 +339,31 @@ func writeRdfs(
 	return nil
 }
 
-func add(ef entitiesFacets, entity, key string, t *rdf.Term) {
-	fs, ok := ef[entity]
+func addFacet(
+	entitiesFacets map[string]entityFacets,
+	entityKey, facetKey string,
+	term *rdf.Term,
+) {
+	ef, ok := entitiesFacets[entityKey]
 	if !ok {
-		fs = make(map[string]*rdf.Term)
-		ef[entity] = fs
+		ef = make(map[string]*rdf.Term)
+		entitiesFacets[entityKey] = ef
 	}
-	fs[key] = t
+	ef[facetKey] = term
 }
 
-func convert(m map[string]*rdf.Term) []*rdf.Facet {
-	s := make([]*rdf.Facet, 0, len(m))
-	for key, term := range m {
+func convertFacets(ef entityFacets) []*rdf.Facet {
+	s := make([]*rdf.Facet, 0, len(ef))
+	for key, term := range ef {
 		s = append(s, rdf.NewFacet(key, term))
 	}
 	return s
 }
 
-func blankNode(id string) string {
+func makeBlankNode(id string) string {
 	return "_:" + id
 }
 
-func entityKey(prefix, value string) string {
+func makeEntityKey(prefix, value string) string {
 	return prefix + value
 }

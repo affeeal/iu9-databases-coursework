@@ -1,21 +1,21 @@
 ---
-name: act-mooc
-delimiter: "\t"
 files:
   - name: mooc_action_labels.tsv
-    schema:
+    delimiter: "\t"
+    declarations:
       - name: ACTIONID
         type: id
         extra:
           prefix: a
       - name: LABEL
         type: int
-    facets:
+    facets_to_save:
       - entity: ACTIONID
         key: label
         value: LABEL
   - name: mooc_action_features.tsv
-    schema:
+    delimiter: "\t"
+    declarations:
       - name: ACTIONID
         type: id
         extra:
@@ -28,7 +28,7 @@ files:
         type: float
       - name: FEATURE3
         type: float
-    facets:
+    facets_to_save:
       - entity: ACTIONID
         key: feature0
         value: FEATURE0
@@ -42,7 +42,8 @@ files:
         key: feature3
         value: FEATURE3
   - name: mooc_actions.tsv
-    schema:
+    delimiter: "\t"
+    declarations:
       - name: ACTIONID
         type: id
         extra:
@@ -57,11 +58,11 @@ files:
           prefix: t
       - name: TIMESTAMP
         type: float
-    facets:
+    facets_to_save:
       - entity: ACTIONID
         key: timestamp
         value: TIMESTAMP
-    rdfs:
+    rdfs_to_write:
       - subject: USERID
         predicat: performs
         object: ACTIONID
