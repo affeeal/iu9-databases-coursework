@@ -5,9 +5,9 @@ import "fmt"
 type Decoration uint8
 
 const (
-	None Decoration = iota
-	Quotes
-	AngleBrackets
+	NONE Decoration = iota
+	QUOTES
+	ANGLE_BRACKETS
 )
 
 type Term struct {
@@ -21,15 +21,15 @@ func NewTerm(val string, dec Decoration) *Term {
 
 func (term *Term) String() string {
 	switch term.dec {
-	case None:
+	case NONE:
 		return term.val
-	case Quotes:
+	case QUOTES:
 		return `"` + term.val + `"`
-	case AngleBrackets:
+	case ANGLE_BRACKETS:
 		return "<" + term.val + ">"
 	}
 
-	panic("bad term decoration type")
+	return "" // Won't happen
 }
 
 type Facet struct {
@@ -62,11 +62,11 @@ func NewRdf(
 	}
 }
 
-func (triple *Rdf) String() string {
+func (rdf *Rdf) String() string {
 	facets := ""
-	if len(triple.facets) > 0 {
+	if len(rdf.facets) > 0 {
 		facets = "("
-		for i, facet := range triple.facets {
+		for i, facet := range rdf.facets {
 			if i > 0 {
 				facets += ", "
 			}
@@ -77,13 +77,13 @@ func (triple *Rdf) String() string {
 
 	return fmt.Sprintf(
 		"%s %s %s %s.",
-		triple.subject.String(),
-		triple.predicat.String(),
-		triple.object.String(),
+		rdf.subject.String(),
+		rdf.predicat.String(),
+		rdf.object.String(),
 		facets,
 	)
 }
 
-func (triple *Rdf) Stringln() string {
-	return triple.String() + "\n"
+func (rdf *Rdf) Stringln() string {
+	return rdf.String() + "\n"
 }

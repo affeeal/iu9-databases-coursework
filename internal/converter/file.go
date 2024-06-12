@@ -60,17 +60,17 @@ var (
 	}
 
 	termDecorations = []rdf.Decoration{
-		rdf.Quotes, // INT
-		rdf.Quotes, // FLOAT
-		rdf.Quotes, // STRING
-		rdf.None,   // ID
+		rdf.QUOTES, // INT
+		rdf.QUOTES, // FLOAT
+		rdf.QUOTES, // STRING
+		rdf.NONE,   // ID
 	}
 
 	// NOTE: no ID
 	facetDecorations = []rdf.Decoration{
-		rdf.None,   // INT
-		rdf.None,   // FLOAT
-		rdf.Quotes, // STRING
+		rdf.NONE,   // INT
+		rdf.NONE,   // FLOAT
+		rdf.QUOTES, // STRING
 	}
 )
 
@@ -325,8 +325,8 @@ func (file *File) writeRdfs(
 		}
 
 		r := rdf.NewRdf(
-			rdf.NewTerm(subject, rdf.None),
-			rdf.NewTerm(rule.Predicat, rdf.AngleBrackets),
+			rdf.NewTerm(subject, rdf.NONE),
+			rdf.NewTerm(rule.Predicat, rdf.ANGLE_BRACKETS),
 			rdf.NewTerm(object, termDecorations[objectType.dt]),
 			facets,
 		)
