@@ -31,7 +31,7 @@ func (ds *Dataset) process(datasetPath string) error {
 
 	for _, file := range ds.Files {
 		if err = file.process(entitiesFacets, output, sourcesPath); err != nil {
-			return errors.Wrap(err, "File "+file.Name)
+			return errors.Wrap(err, file.Name)
 		}
 	}
 

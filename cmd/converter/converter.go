@@ -10,12 +10,12 @@ var datasetsPath string
 
 func init() {
 	const (
-		usage = "path to the datasets"
-		value = "datasets"
+		USAGE = "path to the datasets"
+		VALUE = "datasets"
 	)
 
-	flag.StringVar(&datasetsPath, "datasets", value, usage)
-	flag.StringVar(&datasetsPath, "d", value, usage+" (shorthand)")
+	flag.StringVar(&datasetsPath, "datasets", VALUE, USAGE)
+	flag.StringVar(&datasetsPath, "d", VALUE, USAGE+" (shorthand)")
 }
 
 func main() {

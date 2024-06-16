@@ -29,7 +29,7 @@ func (term *Term) String() string {
 		return "<" + term.val + ">"
 	}
 
-	return "" // Won't happen
+	return ""
 }
 
 type Facet struct {

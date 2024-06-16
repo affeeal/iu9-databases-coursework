@@ -20,7 +20,7 @@ func ProcessDatasets(datasetsPath string) error {
 
 	for _, entry := range entires {
 		if !entry.IsDir() {
-			log.Println("Ignore file " + entry.Name())
+			log.Println("ignore file " + entry.Name())
 			wg.Done()
 			continue
 		}
@@ -28,13 +28,12 @@ func ProcessDatasets(datasetsPath string) error {
 		go func(datasetName string) {
 			defer wg.Done()
 
-			datasetPath := makePath(datasetsPath, datasetName)
-			if err := ProcessDataset(datasetPath); err != nil {
-				log.Println(errors.Wrap(err, "Dataset "+datasetName))
+			if err := ProcessDataset(makePath(datasetsPath, datasetName)); err != nil {
+				log.Println(errors.Wrap(err, datasetName))
 				return
 			}
 
-			log.Println("Successfully processed " + datasetName)
+			log.Println("successfully processed " + datasetName)
 		}(entry.Name())
 	}
 

@@ -66,7 +66,7 @@ var (
 		rdf.NONE,   // ID
 	}
 
-	// NOTE: no ID
+	// ID cannot be a facet
 	facetDecorations = []rdf.Decoration{
 		rdf.NONE,   // INT
 		rdf.NONE,   // FLOAT
@@ -94,6 +94,7 @@ func (file *File) process(
 
 	reader := csv.NewReader(source)
 
+	// reader.Delimiter == ',' by default
 	if file.Delimiter != "" {
 		delimiter, err := validateSymbol(file.Delimiter)
 		if err != nil {
@@ -103,6 +104,7 @@ func (file *File) process(
 		reader.Comma = delimiter
 	}
 
+	// file.Comment == 0 by default
 	if file.Comment != "" {
 		comment, err := validateSymbol(file.Comment)
 		if err != nil {
@@ -126,9 +128,7 @@ func (file *File) process(
 		record, err := reader.Read()
 		if err == io.EOF {
 			break
-		}
-
-		if err != nil {
+		} else if err != nil {
 			return err
 		}
 
@@ -149,9 +149,7 @@ func (file *File) validate() (map[string]schemaType, error) {
 
 	if err = file.validateFacetRules(schema); err != nil {
 		return nil, err
-	}
-
-	if err = file.validateRdfRules(schema); err != nil {
+	} else if err = file.validateRdfRules(schema); err != nil {
 		return nil, err
 	}
 
@@ -163,12 +161,12 @@ func (file *File) validateDeclarations() (map[string]schemaType, error) {
 
 	for _, decl := range file.Declarations {
 		if _, ok := schema[decl.Name]; ok {
-			return nil, errors.New("Schema name " + decl.Name + " redefinition")
+			return nil, errors.New("schema name " + decl.Name + " redefinition")
 		}
 
 		dt, ok := dataTypes[decl.Type]
 		if !ok {
-			return nil, errors.New("Unknown data type " + decl.Type)
+			return nil, errors.New("unknown data type " + decl.Type)
 		}
 
 		schema[decl.Name] = schemaType{
@@ -186,8 +184,10 @@ func (file *File) validateFacetRules(schema map[string]schemaType) error {
 			return err
 		}
 
-		if _, err := validateName(schema, rule.Value, "facet value"); err != nil {
+		if st, err := validateName(schema, rule.Value, "facet value"); err != nil {
 			return err
+		} else if st.dt == ID {
+			return errors.New("facet value " + rule.Value + " data type must not be an id")
 		}
 	}
 
@@ -222,7 +222,7 @@ func validateName(
 ) (schemaType, error) {
 	st, ok := schema[name]
 	if !ok {
-		return st, errors.New("Unknown " + role + " " + name)
+		return st, errors.New("unknown " + role + " " + name)
 	}
 
 	return st, nil
@@ -235,9 +235,7 @@ func validateId(schema map[string]schemaType, name, role string) error {
 	}
 
 	if st.dt != ID {
-		return errors.New(
-			"Data type of " + role + " " + name + " must be an id",
-		)
+		return errors.New(role + " " + name + " data type must be an id")
 	}
 
 	return nil
@@ -246,14 +244,14 @@ func validateId(schema map[string]schemaType, name, role string) error {
 func validateSymbol(rawSymbol string) (rune, error) {
 	if len(rawSymbol) != 1 {
 		return 0, errors.New(
-			"Special symbol " + rawSymbol + " must be a single rune",
+			"special symbol " + rawSymbol + " must be a single rune",
 		)
 	}
 
 	symbol := rune(rawSymbol[0])
 
 	if symbol == '\r' || symbol == '\n' {
-		return 0, errors.New(`Special symbol must not be \r, \n`)
+		return 0, errors.New(`special symbol must not be \r, \n`)
 	}
 
 	return symbol, nil
