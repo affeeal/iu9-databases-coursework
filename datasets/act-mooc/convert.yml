@@ -9,8 +9,8 @@ files:
           prefix: a
       - name: LABEL
         type: int
-    facets_to_save:
-      - entity: ACTIONID
+    entity_facets:
+      - id: ACTIONID
         key: label
         value: LABEL
   - name: mooc_action_features.tsv
@@ -28,17 +28,18 @@ files:
         type: float
       - name: FEATURE3
         type: float
-    facets_to_save:
-      - entity: ACTIONID
+    entity_facets:
+        # TODO: load other features?
+      - id: ACTIONID
         key: feature0
         value: FEATURE0
-      - entity: ACTIONID
+      - id: ACTIONID
         key: feature1
         value: FEATURE1
-      - entity: ACTIONID
+      - id: ACTIONID
         key: feature2
         value: FEATURE2
-      - entity: ACTIONID
+      - id: ACTIONID
         key: feature3
         value: FEATURE3
   - name: mooc_actions.tsv
@@ -58,15 +59,15 @@ files:
           prefix: t
       - name: TIMESTAMP
         type: float
-    facets_to_save:
-      - entity: ACTIONID
-        key: timestamp
-        value: TIMESTAMP
-    rdfs_to_write:
+    rdfs:
       - subject: USERID
         predicat: performs
         object: ACTIONID
-        facet_entity: ACTIONID
+        entity_facets_id: ACTIONID
+        # NOTE: it's also possible to write the following facet as entity facet.
+        facets:
+          - key: timestamp
+            value: TIMESTAMP
       - subject: ACTIONID
         predicat: on
         object: TARGETID

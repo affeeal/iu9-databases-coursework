@@ -8,25 +8,25 @@ import (
 	"github.com/pkg/errors"
 )
 
-type Dataset struct {
-	Files []File `yaml:"files"`
+type dataset struct {
+	Files []file `yaml:"files"`
 }
 
 type entityFacets map[string]*rdf.Term
 
-func (ds *Dataset) process(datasetPath string) error {
+func (ds *dataset) process(datasetPath string) error {
 	const (
-		OUTPUT_NAME  = "output.rdf"
-		SOURCES_NAME = "sources"
+		outputName  = "output.rdf"
+		sourcesName = "sources"
 	)
 
-	output, err := os.Create(makePath(datasetPath, OUTPUT_NAME))
+	output, err := os.Create(makePath(datasetPath, outputName))
 	if err != nil {
 		return err
 	}
 	defer output.Close()
 
-	sourcesPath := makePath(datasetPath, SOURCES_NAME)
+	sourcesPath := makePath(datasetPath, sourcesName)
 	entitiesFacets := make(map[string]entityFacets)
 
 	for _, file := range ds.Files {

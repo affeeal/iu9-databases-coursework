@@ -1,3 +1,21 @@
 ---
 files:
-  # TODO
+  - name: token_transfers.csv # TODO: replace with token_transfers_V2.0.0.csv
+    declarations:
+      - name: from_address
+        type: id
+      - name: to_address
+        type: id
+      - name: time_stamp
+        type: int
+      - name: value
+        type: float
+    rdfs:
+      - subject: from_address
+        predicat: to
+        object: to_address
+        facets:
+          - key: timestamp
+            value: time_stamp
+          - key: value
+            value: value

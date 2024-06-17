@@ -6,7 +6,7 @@ files:
         type: id
       - name: class
         type: int
-    rdfs_to_write:
+    rdfs:
       - subject: txId
         predicat: class
         object: class
@@ -16,7 +16,7 @@ files:
         type: id
       - name: txId2
         type: id
-    rdfs_to_write:
+    rdfs:
       - subject: txId1
         predicat: successors
         object: txId2
@@ -64,7 +64,7 @@ files:
         type: float
       - name: out_BTC_total
         type: float
-    rdfs_to_write:
+    rdfs:
       - subject: txId
         predicat: time_step
         object: Time step

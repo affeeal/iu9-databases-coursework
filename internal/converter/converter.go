@@ -25,10 +25,12 @@ func ProcessDatasets(datasetsPath string) error {
 			continue
 		}
 
+		// TODO: handle error?
 		go func(datasetName string) {
 			defer wg.Done()
 
-			if err := ProcessDataset(makePath(datasetsPath, datasetName)); err != nil {
+			err := ProcessDataset(makePath(datasetsPath, datasetName))
+			if err != nil {
 				log.Println(errors.Wrap(err, datasetName))
 				return
 			}
@@ -43,9 +45,9 @@ func ProcessDatasets(datasetsPath string) error {
 }
 
 func ProcessDataset(datasetPath string) error {
-	const CONFIG_NAME = "convert.yml"
+	const configName = "convert.yml"
 
-	config, err := os.Open(makePath(datasetPath, CONFIG_NAME))
+	config, err := os.Open(makePath(datasetPath, configName))
 	if err != nil {
 		return err
 	}
@@ -54,7 +56,7 @@ func ProcessDataset(datasetPath string) error {
 	decoder := yaml.NewDecoder(config)
 	decoder.KnownFields(true)
 
-	var ds Dataset
+	var ds dataset
 	if err = decoder.Decode(&ds); err != nil {
 		return err
 	}
