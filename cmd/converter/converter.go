@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/affeeal/iu9-database-coursework/internal/converter"
+	"github.com/affeeal/iu9-databases-coursework/internal/converter"
 )
 
 var datasetsPath string

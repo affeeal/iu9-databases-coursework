@@ -4,7 +4,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/affeeal/iu9-database-coursework/internal/rdf"
+	"github.com/affeeal/iu9-databases-coursework/internal/rdf"
 	"github.com/pkg/errors"
 )
 
