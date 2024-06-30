@@ -1,4 +1,4 @@
-module github.com/affeeal/iu9-database-coursework
+module github.com/affeeal/iu9-databases-coursework
 
 go 1.22.0
 
