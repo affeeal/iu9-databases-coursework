@@ -9,10 +9,10 @@ files:
           prefix: a
       - name: LABEL
         type: int
-    entity_facets:
-      - id: ACTIONID
-        key: label
-        value: LABEL
+    rdfs:
+      - subject: ACTIONID
+        predicat: label
+        object: LABEL
   - name: mooc_action_features.tsv
     delimiter: "\t"
     declarations:
@@ -28,20 +28,19 @@ files:
         type: float
       - name: FEATURE3
         type: float
-    entity_facets:
-        # TODO: load other features?
-      - id: ACTIONID
-        key: feature0
-        value: FEATURE0
-      - id: ACTIONID
-        key: feature1
-        value: FEATURE1
-      - id: ACTIONID
-        key: feature2
-        value: FEATURE2
-      - id: ACTIONID
-        key: feature3
-        value: FEATURE3
+    rdfs:
+      - subject: ACTIONID
+        predicat: feature0
+        object: FEATURE0
+      - subject: ACTIONID
+        predicat: feature1
+        object: FEATURE1
+      - subject: ACTIONID
+        predicat: feature2
+        object: FEATURE2
+      - subject: ACTIONID
+        predicat: feature3
+        object: FEATURE3
   - name: mooc_actions.tsv
     delimiter: "\t"
     declarations:
@@ -60,14 +59,24 @@ files:
       - name: TIMESTAMP
         type: float
     rdfs:
+      - subject: ACTIONID
+        predicat: actionId
+        object: ACTIONID
+        cast_object_to: int
+      - subject: USERID
+        predicat: userId
+        object: USERID
+        cast_object_to: int
+      - subject: TARGETID
+        predicat: targetId
+        object: TARGETID
+        cast_object_to: int
+      - subject: ACTIONID
+        predicat: timestamp
+        object: TIMESTAMP
       - subject: USERID
         predicat: performs
         object: ACTIONID
-        entity_facets_id: ACTIONID
-        # NOTE: it's also possible to write the following facet as entity facet.
-        facets:
-          - key: timestamp
-            value: TIMESTAMP
       - subject: ACTIONID
         predicat: on
         object: TARGETID

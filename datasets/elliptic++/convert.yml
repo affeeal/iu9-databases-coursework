@@ -1,49 +1,31 @@
 ---
 files:
-  - name: txs_classes.csv
-    declarations:
-      - name: txId
-        type: id
-      - name: class
-        type: int
-    rdfs:
-      - subject: txId
-        predicat: class
-        object: class
-  - name: txs_edgelist.csv
-    declarations:
-      - name: txId1
-        type: id
-      - name: txId2
-        type: id
-    rdfs:
-      - subject: txId1
-        predicat: successors
-        object: txId2
   - name: txs_features.csv
     declarations:
       - name: txId
         type: id
       - name: Time step
         type: int
-      - name: Local_feature_1 # TODO: process other local features?
+      - name: Local_feature_1
         type: float
-      - name: Aggregate_feature_1 # TODO: process other aggregate features?
+      # NOTE: Write down other local features here if needed.
+      - name: Aggregate_feature_1
         type: float
+      # NOTE: Write down other aggregate features here if needed.
       - name: in_txs_degree
-        type: int
+        type: float
       - name: out_txs_degree
-        type: int
+        type: float
       - name: total_BTC
         type: float
       - name: fees
         type: float
       - name: size
-        type: int
+        type: float
       - name: num_input_addresses
-        type: int
+        type: float
       - name: num_output_addresses
-        type: int
+        type: float
       - name: in_BTC_min
         type: float
       - name: in_BTC_max
@@ -66,14 +48,20 @@ files:
         type: float
     rdfs:
       - subject: txId
-        predicat: time_step
+        predicat: id
+        object: txId
+        cast_object_to: int
+      - subject: txId
+        predicat: Time_step
         object: Time step
       - subject: txId
         predicat: Local_feature_1
         object: Local_feature_1
+      # NOTE: Write down other local features here if needed.
       - subject: txId
         predicat: Aggregate_feature_1
         object: Aggregate_feature_1
+      # NOTE: Write down other aggregate features here if needed.
       - subject: txId
         predicat: in_txs_degree
         object: in_txs_degree
@@ -125,3 +113,23 @@ files:
       - subject: txId
         predicat: out_BTC_total
         object: out_BTC_total
+  - name: txs_classes.csv
+    declarations:
+      - name: txId
+        type: id
+      - name: class
+        type: int
+    rdfs:
+      - subject: txId
+        predicat: class
+        object: class
+  - name: txs_edgelist.csv
+    declarations:
+      - name: txId1
+        type: id
+      - name: txId2
+        type: id
+    rdfs:
+      - subject: txId1
+        predicat: successors
+        object: txId2

@@ -29,9 +29,9 @@ func (ds *dataset) process(datasetPath string) error {
 	sourcesPath := makePath(datasetPath, sourcesName)
 	entitiesFacets := make(map[string]entityFacets)
 
-	for _, file := range ds.Files {
-		if err = file.process(entitiesFacets, output, sourcesPath); err != nil {
-			return errors.Wrap(err, file.Name)
+	for _, f := range ds.Files {
+		if err = f.process(entitiesFacets, output, sourcesPath); err != nil {
+			return errors.Wrap(err, f.Name)
 		}
 	}
 

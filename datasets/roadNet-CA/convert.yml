@@ -12,3 +12,11 @@ files:
       - subject: FromNodeId
         predicat: successors
         object: ToNodeId
+      - subject: FromNodeId
+        predicat: id
+        object: FromNodeId
+        cast_object_to: int
+      - subject: ToNodeId
+        predicat: id
+        object: ToNodeId
+        cast_object_to: int

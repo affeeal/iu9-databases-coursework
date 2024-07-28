@@ -1,1 +1,2 @@
+id: int @index(int) .
 successors: [uid] @reverse .

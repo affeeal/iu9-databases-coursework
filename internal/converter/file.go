@@ -231,8 +231,12 @@ func (file *file) writeRdfs(
 			),
 		)
 
-		var object string
 		objectType := schema[rule.Object]
+		if rule.CastObjectTo != "" {
+			objectType.dt = dataTypes[rule.CastObjectTo]
+		}
+
+		var object string
 		if objectType.dt == idType {
 			object = makeBlankNode(
 				makeEntityKey(

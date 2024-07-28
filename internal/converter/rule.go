@@ -6,6 +6,7 @@ type rdfRule struct {
 	Subject        string      `yaml:"subject"`
 	Predicat       string      `yaml:"predicat"`
 	Object         string      `yaml:"object"`
+	CastObjectTo   string      `yaml:"cast_object_to"`
 	Facets         []facetRule `yaml:"facets"`
 	EntityFacetsId string      `yaml:"entity_facets_id"`
 }
@@ -30,6 +31,8 @@ func (rule *rdfRule) validate(schema map[string]schemaType) error {
 	if err != nil {
 		return err
 	}
+
+	// TODO: validate cast_object_to type
 
 	for _, rule := range rule.Facets {
 		if err = rule.validate(schema, "RDF facet"); err != nil {

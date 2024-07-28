@@ -1,2 +1,11 @@
+userId: int @index(int) .
+actionId: int @index(int) .
+targetId: int @index(int) .
 performs: [uid] .
 on: uid .
+label: int .
+feature0: float .
+feature1: float .
+feature2: float .
+feature3: float .
+timestamp: float .
