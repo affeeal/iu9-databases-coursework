@@ -11,6 +11,7 @@ import (
 
 	"github.com/dgraph-io/dgo/v230"
 	"github.com/dgraph-io/dgo/v230/protos/api"
+	"github.com/pbnjay/memory"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -22,7 +23,7 @@ type lstVar []string
 const (
 	defaultHost         = "localhost"
 	defaultPort         = 9080
-	grpcMaxRecieveBytes = 1e+8
+	grpcMaxRecieveBytes = 1e+9
 )
 
 var (
@@ -71,19 +72,27 @@ func getDgraphClient(host string, port uint) (*dgo.Dgraph, cancelFunc) {
 	}
 }
 
-func performQuery(dg *dgo.Dgraph, queryFilename string) *api.Latency {
+func performQuery(dg *dgo.Dgraph, queryFilename string) {
+	log.Println("Handling", queryFilename)
 	query, err := os.ReadFile(queryFilename)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	txn := dg.NewReadOnlyTxn().BestEffort()
+	memoryBefore := memory.FreeMemory()
 	resp, err := txn.Query(context.Background(), string(query))
+	memoryAfter := memory.FreeMemory()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return resp.GetLatency()
+	log.Printf("Free RAM before the execution: %d bytes\n", memoryBefore)
+	log.Printf("Free RAM after the execution: %d bytes\n", memoryAfter)
+	log.Printf("RAM change: %d bytes", memoryBefore-memoryAfter)
+
+	latency := resp.Latency
+	log.Printf("Request latency: %d nanoseconds\n", latency.GetTotalNs())
 }
 
 func init() {
@@ -102,10 +111,7 @@ func main() {
 	dg, cancel := getDgraphClient(host, port)
 	defer cancel()
 
-	var latency *api.Latency
 	for _, queryFilename := range queryFilenames {
-		latency = performQuery(dg, queryFilename)
-		fmt.Println(*latency)
-		// TODO: handle latency
+		performQuery(dg, queryFilename)
 	}
 }

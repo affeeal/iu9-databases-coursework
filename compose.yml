@@ -18,7 +18,7 @@ services:
       - 9080:9080
     restart: on-failure
     command: dgraph alpha --my=alpha:7080 --zero=zero:5080 --security \
-             whitelist=0.0.0.0/0
+             whitelist=0.0.0.0/0 --limit query-edge=10000000
 
   ratel:
     image: dgraph/ratel:latest
