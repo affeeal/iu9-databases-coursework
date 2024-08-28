@@ -1,1 +1,8 @@
-# TODO
+address: string @index(hash) .
+block_number: int .
+transaction_index: int .
+time_stamp: int .
+contract: string @index(hash) .
+value: float .
+from: [uid] .
+to: uid .
