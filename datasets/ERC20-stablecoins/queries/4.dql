@@ -1,0 +1,13 @@
+{
+  addresses as var(func: has(address)) {
+    from @filter(ge(value, 1000)) {
+      outcomingTransferValue as value
+    }
+    outcomingTransferAverageValue as avg(val(outcomingTransferValue))
+  }
+
+  result(func: uid(addresses)) {
+    uid
+    val(outcomingTransferAverageValue)
+  }
+}

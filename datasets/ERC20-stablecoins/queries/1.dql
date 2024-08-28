@@ -1,0 +1,18 @@
+# Auxiliary query:
+# {
+# 	addresses as var(func: has(address)) {
+#     outcomingTransfers as count(from)
+#   }
+#
+#   query(func: uid(addresses), orderdesc: val(outcomingTransfers), first: 1) {
+#  		address
+#   	val(outcomingTransfers)
+#   }
+# }
+{
+  result(func: eq(address, "0x74de5d4fcbf63e00296fd95d33236b9794016631")) @recurse(depth: 3) {
+    uid
+    from @filter(ge(time_stamp, 1653000000))
+    to
+  }
+}
