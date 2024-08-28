@@ -1,0 +1,13 @@
+{
+  start as var(func: eq(id, 2984918))
+  end as var(func: eq(id, 313982611))
+  
+	path as shortest(from: uid(start), to: uid(end)) {
+		successors @filter(ge(Time_step, 20))
+  }
+  
+  path(func: uid(path)) {
+    uid
+    class
+  }
+}

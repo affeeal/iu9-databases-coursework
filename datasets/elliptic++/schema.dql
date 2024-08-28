@@ -19,5 +19,5 @@ out_BTC_max: float .
 out_BTC_mean: float .
 out_BTC_median: float .
 out_BTC_total: float .
-class: int .
+class: int @index(int) .
 successors: [uid] @reverse .
