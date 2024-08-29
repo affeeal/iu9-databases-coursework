@@ -1,0 +1,13 @@
+{
+	start as var(func: eq(userId, 1181))
+  end as var(func: eq(targetId, 12))
+  
+  path as shortest(from: uid(start), to: uid(end)) {
+		performs @filter(ge(timestamp, 1_000_000))
+    on
+  }
+    
+  result(func: uid(path)) {
+		uid
+  }
+}

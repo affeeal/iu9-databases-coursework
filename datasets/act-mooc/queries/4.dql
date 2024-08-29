@@ -1,0 +1,25 @@
+{
+	users as var(func: has(userId)) {
+    performs @filter(ge(feature1, 0)) {
+			userFeature1 as feature1
+    }
+    averageUserFeature1 as avg(val(userFeature1))
+  }
+
+	targets as var(func: has(targetId)) {
+    ~on @filter(ge(feature1, 0)) {
+			targetFeature1 as feature1
+    }
+    averageTargetFeature1 as avg(val(targetFeature1))
+  }
+    
+	markedUsers(func: uid(users)) {
+		uid
+    val(averageUserFeature1)
+  }
+
+	markedTargets(func: uid(targets)) {
+		uid
+    val(averageTargetFeature1)
+  }
+}

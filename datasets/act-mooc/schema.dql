@@ -1,9 +1,9 @@
 userId: int @index(int) .
 actionId: int @index(int) .
 targetId: int @index(int) .
-performs: [uid] .
-on: uid .
-label: int .
+performs: [uid] @reverse .
+on: uid @reverse .
+label: int @index(int) .
 feature0: float .
 feature1: float .
 feature2: float .

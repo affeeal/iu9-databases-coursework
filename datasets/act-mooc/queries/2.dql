@@ -1,0 +1,5 @@
+{
+	result(func: eq(label, 0)) {
+		uid
+  }
+}

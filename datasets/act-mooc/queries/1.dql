@@ -1,0 +1,19 @@
+# {
+# 	users as var(func: has(performs)) {
+# 		actionsCount as count(performs)
+#   }
+#   
+#   query(func: uid(users), orderdesc: val(actionsCount), first: 1) {
+# 		userId
+#   	val(actionsCount)
+#   }
+# }
+
+# userId=1181 performed 505 actions
+{
+  result(func: eq(userId, 1181)) @recurse(depth: 3) {
+    uid
+    performs @filter(ge(timestamp, 1_000_000))
+    on
+  }
+}

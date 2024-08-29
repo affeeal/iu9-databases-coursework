@@ -5,8 +5,7 @@ files:
     declarations:
       - name: ACTIONID
         type: id
-        extra:
-          prefix: a
+        prefix: a
       - name: LABEL
         type: int
     rdfs:
@@ -18,8 +17,7 @@ files:
     declarations:
       - name: ACTIONID
         type: id
-        extra:
-          prefix: a
+        prefix: a
       - name: FEATURE0
         type: float
       - name: FEATURE1
@@ -46,16 +44,13 @@ files:
     declarations:
       - name: ACTIONID
         type: id
-        extra:
-          prefix: a
+        prefix: a
       - name: USERID
         type: id
-        extra:
-          prefix: u
+        prefix: u
       - name: TARGETID
         type: id
-        extra:
-          prefix: t
+        prefix: t
       - name: TIMESTAMP
         type: float
     rdfs:
