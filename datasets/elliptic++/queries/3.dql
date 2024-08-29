@@ -1,6 +1,6 @@
 {
   transactions as var(func: eq(class, 3)) @cascade(successors) {
-    successors @filter(ge(size, 225))
+    successors @filter(ge(Time_step, 25))
   }
 
   var(func: uid(transactions)) {
@@ -9,8 +9,7 @@
     degree as math(successorsCount + predecessorsCount)
   }
 
-  result(func: ge(val(degree), 20)) {
+  result(func: ge(val(degree), 50)) {
     uid
-    val(degree)
   }
 }

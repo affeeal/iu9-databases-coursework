@@ -1,18 +1,20 @@
 {
-  transactions as var(func: has(id)) {
+  var(func: has(id)) {
     successors @filter(le(Local_feature_1, -0.15)) {
 			successorLocalFeature1 as Local_feature_1
     }
+    successorAverageLocalFeature1 as avg(val(successorLocalFeature1))
+  }
+
+  var(func: has(id)) {
     ~successors @filter(le(Local_feature_1, -0.15)) {
 			predecessorLocalFeature1 as Local_feature_1
    	}
-    successorAverageLocalFeature1 as avg(val(successorLocalFeature1))
     predecessorAverageLocalFeature1 as avg(val(predecessorLocalFeature1))
-    averageLocalFeature1 as math((successorAverageLocalFeature1 + predecessorAverageLocalFeature1) / 2)
-	}
-  
-  result(func: uid(transactions)) {
-    id
-    val(averageLocalFeature1)
+  }
+
+  result(func: has(id)) {
+    uid
+    averageLocalFeature1 : math((successorAverageLocalFeature1 + predecessorAverageLocalFeature1) / 2)
 	}
 }

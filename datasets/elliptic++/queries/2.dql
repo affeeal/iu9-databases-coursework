@@ -1,5 +1,5 @@
 {
-  query(func: eq(class, 3)) {
+  result(func: eq(class, 3)) {
     uid
   }
 }
