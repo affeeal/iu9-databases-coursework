@@ -69,7 +69,12 @@ func getDgraphClient(host string, port uint) (*dgo.Dgraph, cancelFunc) {
 	}
 }
 
-func performQuery(dg *dgo.Dgraph, query string, duration time.Duration, printRespond bool) {
+func performQuery(
+	dg *dgo.Dgraph,
+	query string,
+	duration time.Duration,
+	printRespond bool,
+) {
 	memoryBefore := memory.FreeMemory()
 	var memoryMinimum uint64 = math.MaxUint64
 	quit := make(chan bool)
@@ -96,7 +101,10 @@ func performQuery(dg *dgo.Dgraph, query string, duration time.Duration, printRes
 	quit <- true
 
 	log.Printf("Free RAM before the execution: %d bytes.\n", memoryBefore)
-	log.Printf("Free RAM minimum during the execution: %d bytes.\n", memoryMinimum)
+	log.Printf(
+		"Free RAM minimum during the execution: %d bytes.\n",
+		memoryMinimum,
+	)
 	log.Printf("Free RAM consumption: %d bytes.\n", memoryBefore-memoryMinimum)
 	log.Printf("Request latency: %d nanoseconds.\n", resp.Latency.GetTotalNs())
 
@@ -119,10 +127,20 @@ func validateInput() string {
 }
 
 func init() {
-	flag.DurationVar(&duration, "duration", defaultDuration, "Time duration between free memory measurements")
+	flag.DurationVar(
+		&duration,
+		"duration",
+		defaultDuration,
+		"Time duration between free memory measurements",
+	)
 	flag.StringVar(&host, "host", defaultHost, "Dgraph server host")
 	flag.UintVar(&port, "port", defaultPort, "Dgraph server port")
-	flag.BoolVar(&printRespond, "print-respond", defaultPrintRespond, "Print JSON query respond")
+	flag.BoolVar(
+		&printRespond,
+		"print-respond",
+		defaultPrintRespond,
+		"Print JSON query respond",
+	)
 	flag.StringVar(&queryPath, "query-path", "", "DQL query file path")
 }
 

@@ -58,7 +58,11 @@ var (
 	}
 )
 
-func (f *file) process(entitiesFacets map[string]entityFacets, output *os.File, sourcesPath string) error {
+func (f *file) process(
+	entitiesFacets map[string]entityFacets,
+	output *os.File,
+	sourcesPath string,
+) error {
 	schema, err := f.validate()
 	if err != nil {
 		return err

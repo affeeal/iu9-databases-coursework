@@ -24,7 +24,10 @@ func ProcessDatasets(datasetsPath string) error {
 
 		datasetName := entry.Name()
 		g.Go(func() error {
-			err := errors.Wrap(ProcessDataset(filepath.Join(datasetsPath, datasetName)), datasetName)
+			err := errors.Wrap(
+				ProcessDataset(filepath.Join(datasetsPath, datasetName)),
+				datasetName,
+			)
 			if err != nil {
 				log.Println("Error while processing dataset", err)
 			} else {

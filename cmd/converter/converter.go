@@ -13,23 +13,33 @@ var (
 )
 
 func init() {
-	flag.StringVar(&datasetPath, "dataset-path", "", "Path to the root directory of dataset")
-	flag.StringVar(&datasetsPath, "datasets-path", "", "Path to the directory with the root directories of datasets")
+	flag.StringVar(
+		&datasetPath,
+		"dataset-path",
+		"",
+		"Path to the root directory of dataset",
+	)
+	flag.StringVar(
+		&datasetsPath,
+		"datasets-path",
+		"",
+		"Path to the directory with the root directories of datasets",
+	)
 }
 
 func main() {
 	flag.Parse()
 
-  var err error
-  if datasetPath != "" {
-    err = converter.ProcessDataset(datasetPath)
-  } else if datasetsPath != "" {
-    err = converter.ProcessDatasets(datasetsPath)
-  } else {
-    log.Fatal("Either -dataset-path or -datasets-path must be specified")
-  }
+	var err error
+	if datasetPath != "" {
+		err = converter.ProcessDataset(datasetPath)
+	} else if datasetsPath != "" {
+		err = converter.ProcessDatasets(datasetsPath)
+	} else {
+		log.Fatal("Either -dataset-path or -datasets-path must be specified")
+	}
 
-  if err != nil {
-    log.Fatal(err)
-  }
+	if err != nil {
+		log.Fatal(err)
+	}
 }

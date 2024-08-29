@@ -32,7 +32,9 @@ func (rule *rdfRule) validate(schema map[string]schemaType) error {
 		return err
 	}
 
-	// TODO: validate cast_object_to type
+	if _, ok := dataTypes[rule.CastObjectTo]; !ok {
+		return errors.New("undefined object cast type " + rule.CastObjectTo)
+	}
 
 	for _, rule := range rule.Facets {
 		if err = rule.validate(schema, "RDF facet"); err != nil {
