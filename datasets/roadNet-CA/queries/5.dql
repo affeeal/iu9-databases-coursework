@@ -1,0 +1,12 @@
+{
+  start as var(func: eq(id, 562818))
+  end as var(func: eq(id, 562010))
+
+  path as shortest(from: uid(start), to: uid(end)) {
+    successors
+  }
+
+  result(func: uid(path)) {
+    uid
+  }
+}

@@ -1,0 +1,16 @@
+# {
+#   nodes as var(func: has(successors)) {
+#     successorsCount as count(successors)
+#   }
+#   
+#   result(func: uid(nodes), orderdesc: val(successorsCount), first: 1) {
+#   	id
+#   	val(successorsCount)
+# 	}
+# }
+{
+  result(func: eq(id, 562818)) @recurse(depth: 50) {
+    uid
+    successors
+  }
+}

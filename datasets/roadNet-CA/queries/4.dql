@@ -1,0 +1,13 @@
+{
+   var(func: has(id)) {
+    successors {
+      nodeId as id
+    }
+    nodesIdSum as max(val(nodeId))
+  }
+
+  result(func: uid(nodesIdSum)) {
+    uid
+    val(nodesIdSum)
+  }
+}
