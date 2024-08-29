@@ -32,8 +32,10 @@ func (rule *rdfRule) validate(schema map[string]schemaType) error {
 		return err
 	}
 
-	if _, ok := dataTypes[rule.CastObjectTo]; !ok {
-		return errors.New("undefined object cast type " + rule.CastObjectTo)
+	if rule.CastObjectTo != "" {
+		if _, ok := dataTypes[rule.CastObjectTo]; !ok {
+			return errors.New("undefined object cast type " + rule.CastObjectTo)
+		}
 	}
 
 	for _, rule := range rule.Facets {
