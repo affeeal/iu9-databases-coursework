@@ -21,12 +21,6 @@ type file struct {
 	Rdfs                  []rdfRule         `yaml:"rdfs"`
 }
 
-type declaration struct {
-	Name   string `yaml:"name"`
-	Type   string `yaml:"type"`
-	Prefix string `yaml:"prefix"`
-}
-
 type schemaType struct {
 	dt     dataType
 	prefix string
@@ -64,11 +58,7 @@ var (
 	}
 )
 
-func (f *file) process(
-	entitiesFacets map[string]entityFacets,
-	output *os.File,
-	sourcesPath string,
-) error {
+func (f *file) process(entitiesFacets map[string]entityFacets, output *os.File, sourcesPath string) error {
 	schema, err := f.validate()
 	if err != nil {
 		return err
@@ -81,39 +71,23 @@ func (f *file) process(
 	defer source.Close()
 
 	reader := csv.NewReader(source)
-
-	// reader.Delimiter == ',' by default
-	if f.Delimiter != "" {
-		delimiter, err := validateSymbol(f.Delimiter)
-		if err != nil {
-			return err
-		}
-
-		reader.Comma = delimiter
-	}
-
-	// reader.Comment == 0 by default
-	if f.Comment != "" {
-		comment, err := validateSymbol(f.Comment)
-		if err != nil {
-			return err
-		}
-
-		reader.Comment = comment
+	err = f.adjustReader(reader)
+	if err != nil {
+		return err
 	}
 
 	headers, err := reader.Read()
 	if err != nil {
 		return err
 	}
-	headers = append(headers, f.ArtificialDeclaration.Name)
 
+	headers = append(headers, f.ArtificialDeclaration.Name)
 	indices := make(map[string]uint)
 	for i, header := range headers {
 		indices[header] = uint(i)
 	}
 
-	for artificialId := 0; ; artificialId++ {
+	for artificialId := 0; true; artificialId++ {
 		record, err := reader.Read()
 		if err == io.EOF {
 			break
@@ -121,8 +95,8 @@ func (f *file) process(
 		if err != nil {
 			return err
 		}
-		record = append(record, fmt.Sprint(artificialId))
 
+		record = append(record, fmt.Sprint(artificialId))
 		f.saveFacets(entitiesFacets, record, schema, indices)
 		err = f.writeRdfs(output, entitiesFacets, record, schema, indices)
 		if err != nil {
@@ -156,29 +130,43 @@ func (f *file) validate() (map[string]schemaType, error) {
 
 func (f *file) validateDeclarations() (map[string]schemaType, error) {
 	schema := make(map[string]schemaType)
-
-	// TODO: убрать костыль
-	if f.ArtificialDeclaration.Name != "" {
-		f.Declarations = append(f.Declarations, f.ArtificialDeclaration)
+	for _, decl := range f.Declarations {
+		if err := decl.validate(schema); err != nil {
+			return nil, err
+		}
 	}
 
-	for _, decl := range f.Declarations {
-		if _, ok := schema[decl.Name]; ok {
-			return nil, errors.New("schema name " + decl.Name + " redefinition")
-		}
-
-		dt, ok := dataTypes[decl.Type]
-		if !ok {
-			return nil, errors.New("unknown data type " + decl.Type)
-		}
-
-		schema[decl.Name] = schemaType{
-			dt:     dt,
-			prefix: decl.Prefix,
+	if !f.ArtificialDeclaration.empty() {
+		if err := f.ArtificialDeclaration.validate(schema); err != nil {
+			return nil, err
 		}
 	}
 
 	return schema, nil
+}
+
+func (f *file) adjustReader(reader *csv.Reader) error {
+	// reader.Delimiter == ',' by default
+	if f.Delimiter != "" {
+		delimiter, err := validateSymbol(f.Delimiter)
+		if err != nil {
+			return err
+		}
+
+		reader.Comma = delimiter
+	}
+
+	// reader.Comment == 0 by default
+	if f.Comment != "" {
+		comment, err := validateSymbol(f.Comment)
+		if err != nil {
+			return err
+		}
+
+		reader.Comment = comment
+	}
+
+	return nil
 }
 
 func validateSymbol(rawSymbol string) (rune, error) {
@@ -189,7 +177,6 @@ func validateSymbol(rawSymbol string) (rune, error) {
 	}
 
 	symbol := rune(rawSymbol[0])
-
 	if symbol == '\r' || symbol == '\n' {
 		return 0, errors.New(`special symbol must not be \r, \n`)
 	}
@@ -286,8 +273,7 @@ func (f *file) writeRdfs(
 			facets,
 		)
 
-		_, err := output.WriteString(r.Stringln())
-		if err != nil {
+		if _, err := output.WriteString(r.Stringln()); err != nil {
 			return err
 		}
 	}
@@ -314,7 +300,6 @@ func convertFacets(ef entityFacets) []*rdf.Facet {
 	for key, term := range ef {
 		s = append(s, rdf.NewFacet(key, term))
 	}
-
 	return s
 }
 

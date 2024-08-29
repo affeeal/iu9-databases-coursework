@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 
@@ -23,7 +24,13 @@ func ProcessDatasets(datasetsPath string) error {
 
 		datasetName := entry.Name()
 		g.Go(func() error {
-			return errors.Wrap(ProcessDataset(filepath.Join(datasetsPath, datasetName)), datasetName)
+			err := errors.Wrap(ProcessDataset(filepath.Join(datasetsPath, datasetName)), datasetName)
+			if err != nil {
+				log.Println("Error while processing dataset", err)
+			} else {
+				log.Println("Successfully processed dataset", datasetName)
+			}
+			return err
 		})
 	}
 
