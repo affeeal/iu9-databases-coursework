@@ -1,21 +1,59 @@
 ---
 files:
-  - name: token_transfers.csv # TODO: replace with token_transfers_V2.0.0.csv
+  - name: token_transfers.csv
     declarations:
       - name: from_address
         type: id
+        prefix: a
       - name: to_address
         type: id
+        prefix: a
+      - name: contract_address
+        type: id
+        prefix: a
+      - name: block_number
+        type: int
+      - name: transaction_index
+        type: int
       - name: time_stamp
         type: int
       - name: value
         type: float
+    artificial_declaration:
+      name: transfer
+      type: id
+      prefix: t
     rdfs:
       - subject: from_address
+        predicat: address
+        object: from_address
+        cast_object_to: string
+      - subject: to_address
+        predicat: address
+        object: to_address
+        cast_object_to: string
+      - subject: contract_address
+        predicat: address
+        object: contract_address
+        cast_object_to: string
+      - subject: from_address
+        predicat: from
+        object: transfer
+      - subject: transfer
+        predicat: contract
+        object: contract_address
+      - subject: transfer
         predicat: to
         object: to_address
-        facets:
-          - key: timestamp
-            value: time_stamp
-          - key: value
-            value: value
+      - subject: transfer
+        predicat: block_number
+        object: block_number
+      - subject: transfer
+        predicat: transaction_index
+        object: transaction_index
+      - subject: transfer
+        predicat: time_stamp
+        object: time_stamp
+      - subject: transfer
+        predicat: value
+        object: value

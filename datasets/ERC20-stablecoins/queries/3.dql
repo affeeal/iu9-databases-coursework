@@ -1,9 +1,15 @@
 {
-  transfers as var(func: eq(contract, "0xdac17f958d2ee523a2206206994597c13d831ec7")) @cascade(to) {
-    to @filter(eq(address, "0x0000000000000000000000000000000000000000"))
+  transfers as var(func: eq(value, 1000)) @cascade(contract) {
+    contract @filter(eq(address, "0xdac17f958d2ee523a2206206994597c13d831ec7"))
   }
 
-  result(func: uid(transfers)) {
+  var(func: uid(transfers)) {
+    fromAddresses as count(~from)
+    toAddresses as count(to)
+    degree as math(fromAddresses + toAddresses)
+  }
+
+  result(func: eq(val(degree), 2)) {
     uid
   }
 }
