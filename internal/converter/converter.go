@@ -1,11 +1,11 @@
 package converter
 
 import (
-	"log"
 	"os"
-	"sync"
+	"path/filepath"
 
 	"github.com/pkg/errors"
+	"golang.org/x/sync/errgroup"
 	"gopkg.in/yaml.v3"
 )
 
@@ -15,39 +15,25 @@ func ProcessDatasets(datasetsPath string) error {
 		return err
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(len(entires))
-
+	g := new(errgroup.Group)
 	for _, entry := range entires {
 		if !entry.IsDir() {
-			log.Println("ignore file " + entry.Name())
-			wg.Done()
 			continue
 		}
 
-		// TODO: handle error?
-		go func(datasetName string) {
-			defer wg.Done()
-
-			err := ProcessDataset(makePath(datasetsPath, datasetName))
-			if err != nil {
-				log.Println(errors.Wrap(err, datasetName))
-				return
-			}
-
-			log.Println("successfully processed " + datasetName)
-		}(entry.Name())
+		datasetName := entry.Name()
+		g.Go(func() error {
+			return errors.Wrap(ProcessDataset(filepath.Join(datasetsPath, datasetName)), datasetName)
+		})
 	}
 
-	wg.Wait()
-
-	return nil
+	return g.Wait()
 }
 
 func ProcessDataset(datasetPath string) error {
 	const configName = "convert.yml"
 
-	config, err := os.Open(makePath(datasetPath, configName))
+	config, err := os.Open(filepath.Join(datasetPath, configName))
 	if err != nil {
 		return err
 	}
@@ -61,9 +47,5 @@ func ProcessDataset(datasetPath string) error {
 		return err
 	}
 
-	if err = ds.process(datasetPath); err != nil {
-		return err
-	}
-
-	return nil
+	return ds.process(datasetPath)
 }

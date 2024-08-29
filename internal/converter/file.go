@@ -2,31 +2,34 @@ package converter
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/affeeal/iu9-databases-coursework/internal/rdf"
 	"github.com/pkg/errors"
 )
 
 type file struct {
-	Name         string            `yaml:"name"`
-	Delimiter    string            `yaml:"delimiter"`
-	Comment      string            `yaml:"comment"`
-	Declarations []declaration     `yaml:"declarations"`
-	EntityFacets []entityFacetRule `yaml:"entity_facets"`
-	Rdfs         []rdfRule         `yaml:"rdfs"`
+	Name                  string            `yaml:"name"`
+	Delimiter             string            `yaml:"delimiter"`
+	Comment               string            `yaml:"comment"`
+	Declarations          []declaration     `yaml:"declarations"`
+	ArtificialDeclaration declaration       `yaml:"artificial_declaration"`
+	EntityFacets          []entityFacetRule `yaml:"entity_facets"`
+	Rdfs                  []rdfRule         `yaml:"rdfs"`
 }
 
 type declaration struct {
-	Name  string            `yaml:"name"`
-	Type  string            `yaml:"type"`
-	Extra map[string]string `yaml:"extra"`
+	Name   string `yaml:"name"`
+	Type   string `yaml:"type"`
+	Prefix string `yaml:"prefix"`
 }
 
 type schemaType struct {
-	dt    dataType
-	extra map[string]string
+	dt     dataType
+	prefix string
 }
 
 type dataType uint
@@ -61,8 +64,6 @@ var (
 	}
 )
 
-const prefixOption = "prefix"
-
 func (f *file) process(
 	entitiesFacets map[string]entityFacets,
 	output *os.File,
@@ -73,7 +74,7 @@ func (f *file) process(
 		return err
 	}
 
-	source, err := os.Open(makePath(sourcesPath, f.Name))
+	source, err := os.Open(filepath.Join(sourcesPath, f.Name))
 	if err != nil {
 		return err
 	}
@@ -105,13 +106,14 @@ func (f *file) process(
 	if err != nil {
 		return err
 	}
+	headers = append(headers, f.ArtificialDeclaration.Name)
 
 	indices := make(map[string]uint)
 	for i, header := range headers {
 		indices[header] = uint(i)
 	}
 
-	for {
+	for artificialId := 0; ; artificialId++ {
 		record, err := reader.Read()
 		if err == io.EOF {
 			break
@@ -119,6 +121,7 @@ func (f *file) process(
 		if err != nil {
 			return err
 		}
+		record = append(record, fmt.Sprint(artificialId))
 
 		f.saveFacets(entitiesFacets, record, schema, indices)
 		err = f.writeRdfs(output, entitiesFacets, record, schema, indices)
@@ -154,6 +157,11 @@ func (f *file) validate() (map[string]schemaType, error) {
 func (f *file) validateDeclarations() (map[string]schemaType, error) {
 	schema := make(map[string]schemaType)
 
+	// TODO: убрать костыль
+	if f.ArtificialDeclaration.Name != "" {
+		f.Declarations = append(f.Declarations, f.ArtificialDeclaration)
+	}
+
 	for _, decl := range f.Declarations {
 		if _, ok := schema[decl.Name]; ok {
 			return nil, errors.New("schema name " + decl.Name + " redefinition")
@@ -165,8 +173,8 @@ func (f *file) validateDeclarations() (map[string]schemaType, error) {
 		}
 
 		schema[decl.Name] = schemaType{
-			dt:    dt,
-			extra: decl.Extra,
+			dt:     dt,
+			prefix: decl.Prefix,
 		}
 	}
 
@@ -199,7 +207,7 @@ func (file *file) saveFacets(
 		addFacet(
 			entitiesFacets,
 			makeEntityKey(
-				schema[rule.Id].extra[prefixOption],
+				schema[rule.Id].prefix,
 				record[indices[rule.Id]],
 			),
 			rule.Key,
@@ -211,14 +219,14 @@ func (file *file) saveFacets(
 	}
 }
 
-func (file *file) writeRdfs(
+func (f *file) writeRdfs(
 	output *os.File,
 	entitiesFacets map[string]entityFacets,
 	record []string,
 	schema map[string]schemaType,
 	indices map[string]uint,
 ) error {
-	for _, rule := range file.Rdfs {
+	for _, rule := range f.Rdfs {
 		objectIndex := indices[rule.Object]
 		if record[objectIndex] == "" {
 			continue
@@ -226,7 +234,7 @@ func (file *file) writeRdfs(
 
 		subject := makeBlankNode(
 			makeEntityKey(
-				schema[rule.Subject].extra[prefixOption],
+				schema[rule.Subject].prefix,
 				record[indices[rule.Subject]],
 			),
 		)
@@ -240,7 +248,7 @@ func (file *file) writeRdfs(
 		if objectType.dt == idType {
 			object = makeBlankNode(
 				makeEntityKey(
-					objectType.extra[prefixOption],
+					objectType.prefix,
 					record[objectIndex],
 				),
 			)
@@ -264,7 +272,7 @@ func (file *file) writeRdfs(
 
 		if rule.EntityFacetsId != "" {
 			entityKey := makeEntityKey(
-				schema[rule.EntityFacetsId].extra[prefixOption],
+				schema[rule.EntityFacetsId].prefix,
 				record[indices[rule.EntityFacetsId]],
 			)
 

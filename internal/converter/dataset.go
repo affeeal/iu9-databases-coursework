@@ -2,7 +2,7 @@ package converter
 
 import (
 	"os"
-	"strings"
+	"path/filepath"
 
 	"github.com/affeeal/iu9-databases-coursework/internal/rdf"
 	"github.com/pkg/errors"
@@ -20,13 +20,13 @@ func (ds *dataset) process(datasetPath string) error {
 		sourcesName = "sources"
 	)
 
-	output, err := os.Create(makePath(datasetPath, outputName))
+	output, err := os.Create(filepath.Join(datasetPath, outputName))
 	if err != nil {
 		return err
 	}
 	defer output.Close()
 
-	sourcesPath := makePath(datasetPath, sourcesName)
+	sourcesPath := filepath.Join(datasetPath, sourcesName)
 	entitiesFacets := make(map[string]entityFacets)
 
 	for _, f := range ds.Files {
@@ -36,8 +36,4 @@ func (ds *dataset) process(datasetPath string) error {
 	}
 
 	return nil
-}
-
-func makePath(names ...string) string {
-	return strings.Join(names, "/")
 }

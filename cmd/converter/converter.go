@@ -2,24 +2,34 @@ package main
 
 import (
 	"flag"
+	"log"
 
 	"github.com/affeeal/iu9-databases-coursework/internal/converter"
 )
 
-var datasetsPath string
+var (
+	datasetPath  string
+	datasetsPath string
+)
 
 func init() {
-	const (
-		usage = "path to the datasets"
-		value = "datasets"
-	)
-
-	flag.StringVar(&datasetsPath, "datasets", value, usage)
-	flag.StringVar(&datasetsPath, "d", value, usage+" (shorthand)")
+	flag.StringVar(&datasetPath, "dataset-path", "", "Path to the root directory of dataset")
+	flag.StringVar(&datasetsPath, "datasets-path", "", "Path to the directory with the root directories of datasets")
 }
 
 func main() {
 	flag.Parse()
 
-	converter.ProcessDatasets(datasetsPath)
+  var err error
+  if datasetPath != "" {
+    err = converter.ProcessDataset(datasetPath)
+  } else if datasetsPath != "" {
+    err = converter.ProcessDatasets(datasetsPath)
+  } else {
+    log.Fatal("Either -dataset-path or -datasets-path must be specified")
+  }
+
+  if err != nil {
+    log.Fatal(err)
+  }
 }

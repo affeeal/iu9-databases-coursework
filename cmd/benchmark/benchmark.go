@@ -107,19 +107,21 @@ func performQuery(dg *dgo.Dgraph, query string, duration time.Duration, printRes
 
 func validateInput() string {
 	if queryPath == "" {
-		log.Fatal("Please, specify DQL query file path.")
+		log.Fatal("Please, specify DQL query file path")
 	}
+
 	file, err := os.ReadFile(queryPath)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return string(file)
 }
 
 func init() {
 	flag.DurationVar(&duration, "duration", defaultDuration, "Time duration between free memory measurements")
-	flag.StringVar(&host, "host", defaultHost, "dgraph server host")
-	flag.UintVar(&port, "port", defaultPort, "dgraph server port")
+	flag.StringVar(&host, "host", defaultHost, "Dgraph server host")
+	flag.UintVar(&port, "port", defaultPort, "Dgraph server port")
 	flag.BoolVar(&printRespond, "print-respond", defaultPrintRespond, "Print JSON query respond")
 	flag.StringVar(&queryPath, "query-path", "", "DQL query file path")
 }
