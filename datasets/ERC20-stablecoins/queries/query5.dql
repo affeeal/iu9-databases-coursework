@@ -3,7 +3,7 @@
   end as var(func: eq(address, "0x0000000000000000000000000000000000000000"))
 
   path as shortest(from: uid(start), to: uid(end)) {
-		from @filter(ge(time_stamp, 1653000000))
+    from @filter(ge(time_stamp, 1653000000))
     to
   }
 

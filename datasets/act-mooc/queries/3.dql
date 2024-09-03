@@ -1,15 +1,15 @@
+# targetId=8 <- 19474 actions
 # {
-#   targets as var(func: has(targetId)) {
-#     actionsCount as count(~on)
+#   var(func: has(targetId)) {
+#     actCount as count(~on)
 #   }
 # 
-#   result(func: uid(targets), orderdesc: val(actionsCount), first: 1) {
+#   result(func: uid(actCount), orderdesc: val(actCount), first: 1) {
 #     targetId
-#     val(actionsCount)
+#     val(actCount)
 #   }
 # }
 
-# targetId=8 <- 19474 actions
 {
   actions as var(func: eq(label, 0)) @cascade(on) {
     on @filter(eq(targetId, 8))

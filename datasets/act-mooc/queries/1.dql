@@ -1,19 +1,21 @@
+# userId=1181 -> 505 actions, userId=1686 -> 470 actions
 # {
-# 	users as var(func: has(performs)) {
-# 		actionsCount as count(performs)
+#   var(func: has(performs)) {
+#     actCount as count(performs)
 #   }
-#   
-#   query(func: uid(users), orderdesc: val(actionsCount), first: 1) {
-# 		userId
-#   	val(actionsCount)
+# 
+#   result(func: uid(actCount), orderdesc: val(actCount), first: 2) {
+#     userId
+#     val(actCount)
 #   }
 # }
 
-# userId=1181 performed 505 actions
 {
-  result(func: eq(userId, 1181)) @recurse(depth: 3) {
+  result(func: eq(userId, 1181)) @recurse(depth: 5) @ignorereflex {
     uid
-    performs @filter(ge(timestamp, 1_000_000))
+    performs @filter(ge(timestamp, 1_500_000))
+    ~performs
     on
+    ~on @filter(ge(timestamp, 1_500_000))
   }
 }

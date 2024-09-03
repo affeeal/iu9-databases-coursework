@@ -1,4 +1,14 @@
+/paper/_minted-main
+/paper/lst
 *.rdf
 *.csv
 *.tsv
 *.txt
+*.aux
+*.toc
+*.bbl
+*.blg
+*.bcf
+*.log
+*.out
+*.run.xml

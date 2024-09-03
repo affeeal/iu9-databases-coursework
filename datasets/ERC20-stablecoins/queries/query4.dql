@@ -1,0 +1,20 @@
+{
+  var(func: has(address)) {
+    from @filter(ge(value, 1000)) {
+      fromValue as value
+    }
+    avgFromValue as avg(val(fromValue))
+  }
+
+  var(func: has(address)) {
+    ~to @filter(ge(value, 1000)) {
+      toValue as value
+    }
+    avgToValue as avg(val(toValue))
+  }
+
+  result(func: has(address)) {
+    uid
+    avgValue : math((avgFromValue + avgToValue) / 2)
+  }
+}

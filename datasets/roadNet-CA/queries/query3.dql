@@ -1,0 +1,14 @@
+# 521168 -> 562826
+{
+  nodes as var(func: eq(id, 562818)) @cascade(successors) {
+    successors @filter(eq(id, 562826))
+  }
+
+  var(func: uid(nodes)) {
+    degree as count(successors)
+  }
+
+  result(func: eq(val(degree), 12)) {
+    uid
+  }
+}

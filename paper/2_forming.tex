@@ -1,0 +1,449 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TEXT WIDTH %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Формирование запросов и тестовых данных}
+
+Для оценки производительности СУБД Dgraph над тестовыми данными выполняются следующие типы графовых
+запросов\footnote{Запросы обозначаются строчными буквами латинского алфавита для удобной ссылки на них в дальнейшем.}:
+\begin{enumerate}[label=(\alph*)]
+    \item рекурсивный запрос с фильтрацией по вершинам на пути; \label{query1}
+    \item выбор всех вершин с заданным значением поля; \label{query2}
+    \item выбор всех вершин с заданным значением поля с фильтрацией по связям и степени вершины; \label{query3}
+    \item подсчёт для вершин агрегации некоторого параметра по соседним вершинам с ограничением на значение параметра;
+\label{query4}
+    \item поиск кратчайшего пути между вершинами с фильтрацией по вершинам на пути. \label{query5}
+\end{enumerate}
+В качестве тестовых данных выступают четыре разнородных CSV-датасета с исходными данными в реляционной модели. В следующих подразделах
+излагаются описание датасетов, их структура, графовая интерпретация, а также конкретные схема и запросы DQL.
+
+\subsection{Датасет Elliptic++ Transactions}
+
+\subsubsection{Описание и структура}
+
+Датасет Elliptic++ Transactions~\cite{elliptic} содержит данные о 203\,769 транзакциях Bitcoin, их легальности и
+потоке. Датасет состоит из следующих файлов:
+\begin{itemize}
+  \item файл \texttt{txs\_features.csv} (663 МБ), в котором определяются основные атрибуты транзакций: временн\'{a}я
+метка в целочисленном диапазоне [0, 49], 93 локальных атрибута, описывающих собственную информацию транзакции,
+72 агрегированных атрибута, составленных на основе входящих и исходящих транзакций, и 17 дополнительных атрибутов,
+отражающих статистическую информацию;
+    \item файл \texttt{txs\_classes.csv} (2.3 МБ), в котором определяется класс транзакции. Множество всех транзакций
+разбивается на три класса: легальные (42\,019), нелегальные (4\,545) и неопределённые (157\,205);
+    \item файл \texttt{txs\_edgelist.csv} (4.3 МБ), в котором хранятся 234\,355 упорядоченных пар идентификаторов
+транзакций, отражающих их поток.
+\end{itemize}
+
+\subsubsection{Интерпретация и схема}
+
+Исходные данные естественным образом представляются ориентированным графом, вершины которого --- транзакции, а
+направленные рёбра соответствуют потоку транзакций. В листинге \ref{lst:elliptic:schema} приводится фрагмент DQL-схемы
+датасета, где определены предикаты, использующиеся в дальнейшем при выполнении запросов. Исходные идентификаторы
+транзакций представляются предикатом \texttt{id}. Все исходящие транзакции из данной транзакции представляются
+предикатом \texttt{successors}.
+\begin{listing}[!htb]
+\caption{Фрагмент DQL-схемы датасета Elliptic++ Transactions.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/elliptic/schema}
+\label{lst:elliptic:schema}
+\end{listing}
+
+\subsubsection{Запросы}
+
+Выбор вершин графа и предикатов, участвующих в запросах, является важнейшей составляющей оценивания. Во многих
+ситуациях показательные результаты достигаются, когда в запросе участвуют вершины с наибольшей полустепенью захода или
+исхода --- это нужным образом усложняет выполнение запросов. Для обнаружения таких вершин пишутся вспомогательные
+запросы.
+
+\paragraph{Запрос \ref{query1}}
+
+В листинге \ref{lst:elliptic:most_successors_transaction} приводится вспомогательный запрос для определения транзакции
+с наибольшим числом исходящих транзакций. Предикат \texttt{id} этой транзакции равен 2\,984\,918, а количество
+исходящих транзакций --- 472.
+\begin{listing}[!htb]
+\caption{Запрос для определения транзакции с наибольшим числом исходящих транзакций.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/elliptic/most_successors_transaction}
+\label{lst:elliptic:most_successors_transaction}
+\end{listing}
+
+В листинге \ref{lst:elliptic:query1} приводится запрос \ref{query1}. Рекурсивный обход начинается в транзакции с
+наибольшим числом исходящих транзакций и завершается на глубине 50. Вершины на пути фильтруются по медианной временной
+метке 25.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query1} для датасета Elliptic++ Transactions.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/elliptic/query1}
+\label{lst:elliptic:query1}
+\end{listing}
+
+\paragraph{Запрос \ref{query2}}
+
+В листинге \ref{lst:elliptic:query2} приводится запрос \ref{query2}. В запросе выбираются транзакции,
+легальность которых не определена --- это транзакции со значением 3 предиката \texttt{class}. % 77% от всех транзакций
+\begin{listing}[!htb]
+\caption{Запрос \ref{query2} для датасета Elliptic++ Transactions.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/elliptic/query2}
+\label{lst:elliptic:query2}
+\end{listing}
+
+\paragraph{Запрос \ref{query3}}
+
+В листинге \ref{lst:elliptic:most_predecessors_transaction} приводится вспомогательный запрос для определения
+транзакции с наибольшим числом входящих транзакций. Предикат \texttt{id} этой транзакции равен 43\,388\,675, а
+количество входящих транзакций --- 284.
+\begin{listing}[!htb]
+\caption{Запрос для определения транзакции с наибольшим числом входящих транзакций.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/elliptic/most_predecessors_transaction}
+\label{lst:elliptic:most_predecessors_transaction}
+\end{listing}
+
+В листинге \ref{lst:elliptic:query3} приводится запрос \ref{query3}. Из транзакций запроса \ref{query2} отбираются те,
+что входят в транзакцию, обладающую наибольшим числом входящих транзакций. Полученные транзакции фильтруются по степени 10.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query3} для датасета Elliptic++ Transactions.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/elliptic/query3}
+\label{lst:elliptic:query3}
+\end{listing}
+
+\paragraph{Запрос \ref{query4}}
+
+В листинге \ref{lst:elliptic:query4} приводится запрос \ref{query4}. Для каждой транзакции подсчитывается среднее
+значение поля \texttt{Local\_feature\_1} связанных транзакций, которые удовлетворяют фильтру на \texttt{Local\_feature\_1}.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query4} для датасета Elliptic++ Transactions.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/elliptic/query4}
+\label{lst:elliptic:query4}
+\end{listing}
+
+\paragraph{Запрос \ref{query5}}
+
+В листинге \ref{lst:elliptic:query5} приводится запрос \ref{query5}. Выполняется поик кратчайшего пути между
+транзакциями с наибольшим числом исходящих и входящих транзакций. Транзакции на пути фильтруются по временной
+метке.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query5} для датасета Elliptic++ Transactions.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/elliptic/query5}
+\label{lst:elliptic:query5}
+\end{listing}
+
+\subsection{Датасет MOOC User Actions}
+
+\subsubsection{Описание и структура}
+
+Датасет MOOC User Actions~\cite{mooc} содержит данные о 411\,749 действиях 7\,047 пользователей на платформе
+онлайн-курсов MOOC. Каждое действие ассоциировано с одним из 97 онлайн-курсов.
+
+Датасет состоит из следующих файлов:
+\begin{itemize}
+    \item файл \texttt{mooc\_actions.tsv} (11 МБ), в котором пользователи и курсы связываются отношением многие ко многим
+посредством действий и действиям назначаются временные метки;
+    \item файл \texttt{mooc\_action\_features.tsv} (35 МБ), в котором определяются 4 вещественнозначных атрибута
+действия;
+    \item файл \texttt{mooc\_action\_labels.tsv} (3.5 МБ), в котором действиям назначаются бинарные метки соответственно
+тому, является ли действие последним действием пользователя на курсе.
+\end{itemize}
+
+\subsubsection{Интерпретация и схема}
+
+Датасет представляется ориентированным двудольным графом, вершины которого --- пользователи, действия и курсы, а рёбра
+связывают пользователей и действия и действия и курсы. В листинге \ref{lst:mooc:schema} представлена DQL-схема датасета.
+Исходные идентификаторы пользователей, действий и курсов представляются предикатами \texttt{userId}, \texttt{actionId} и
+\texttt{targetId} соответственно. Все действия одного пользователя выражаются предикатом \texttt{performs}, а связь
+действия и курса описывается предикатом \texttt{on}.
+\begin{listing}[!htb]
+\caption{DQL-схема датасета MOOC User Actions.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/mooc/schema}
+\label{lst:mooc:schema}
+\end{listing}
+
+\subsubsection{Запросы}
+
+\paragraph{Запрос \ref{query1}}
+
+В листинге \ref{lst:mooc:query1_aux} приводится вспомогательный запрос для определения двух пользователей, совершивших
+наибольшее число действий. Ими являются пользователи с \texttt{userId} 1181 (505 действий) и \texttt{userId}
+1686\footnote{Второй пользователь используется в запросе \ref{query5}} (470 действий).
+\begin{listing}[!htb]
+\caption{Запрос для определения двух пользователей, совершивших наибольшее число действий.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/mooc/query1_aux}
+\label{lst:mooc:query1_aux}
+\end{listing}
+
+В листинге \ref{lst:mooc:query1} приводится запрос \ref{query1}. Рекурсивный обход начинается с пользователя,
+совершившего наибольшее число действий, и завершается на глубине 5. В обходе участвуют предикаты \texttt{performs},
+\texttt{on}, а также их обратные версии --- предикаты \texttt{\textasciitilde performs} и \texttt{\textasciitilde on}.
+Это позволяет проводить обход графа без учёта направления рёбер. Фильтрация действий на пути проводится по временной метке.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query1} для датасета MOOC User Actions.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/mooc/query1}
+\label{lst:mooc:query1}
+\end{listing}
+
+\paragraph{Запрос \ref{query2}}
+
+В листинге \ref{lst:mooc:query2} приводится запрос \ref{query2}. В выборке участвуют действия, не являющиеся последними
+действиями пользователя на курсе (значение предиката \texttt{class} этих действий равно 0).
+% 95% всех пользовательских действий
+\begin{listing}[!htb]
+\caption{Запрос \ref{query2} для датасета MOOC User Actions.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/mooc/query2}
+\label{lst:mooc:query2}
+\end{listing}
+
+\paragraph{Запрос \ref{query3}}
+
+В листинге \ref{lst:mooc:query3_aux} приводится вспомогательный запрос для определения курса, с которым ассоциировано
+наибольшее число действий --- курса с \texttt{targetId} 8 и 19\,474 действиями.
+\begin{listing}[!htb]
+\caption{Запрос для определения курса, с которым ассоциировано наибольшее число действий.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/mooc/query3_aux}
+\label{lst:mooc:query3_aux}
+\end{listing}
+
+В листинге \ref{lst:mooc:query3} приводится запрос \ref{query3}. Из множества действий запроса \ref{query2} выбираются
+действия, относящиеся к курсу с \texttt{targetId} 8. Все вершины полученного множества имеют степень 2
+(тривиально, по своей структуре); соответствующая проверка добавлена для поддержания единообразия запросов.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query3} для датасета MOOC User Actions.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/mooc/query3}
+\label{lst:mooc:query3}
+\end{listing}
+
+\paragraph{Запрос \ref{query4}}
+
+В листинге \ref{lst:mooc:query4} приводится запрос \ref{query4}. Для каждого пользователя и курса подсчитывается
+среднее значение поля \texttt{feature1} действий, с которыми это пользователь или курс связан. В подсчёте учитываются
+только неотрицательные значения поля \texttt{feature1}.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query4} для датасета MOOC User Actions.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/mooc/query4}
+\label{lst:mooc:query4}
+\end{listing}
+
+\paragraph{Запрос \ref{query5}}
+
+В листинге \ref{lst:mooc:query5} представлен запрос \ref{query5}. Подобно запросу \ref{query1}, кратчайший путь между
+упоминавшимися пользователями с \texttt{userId} 1181 и \texttt{userId} 1686 вычисляется без учёта ориентации рёбер и с
+фильтрацией вершин на пути по временной метке.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query5} для датасета MOOC User Actions.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/mooc/query5}
+\label{lst:mooc:query5}
+\end{listing}
+
+\subsection{Датасет California Road Network}
+
+\subsubsection{Описание и структура}
+
+Датасет California Road Network~\cite{roadnet} содержит данные о дорожной сети Калифорнии. Датасет представляется
+единственным исходным файлом \texttt{roadNet-CA.txt} (84 МБ), в котором определяются узлы дорожной сети --- пункты
+назначения или пересечения дорог, и двусторонние связи между ними. Количество узлов: 1\,965\,206, и они не имеют
+атрибутов; количество связей: 2\,766\,607.
+
+\subsubsection{Интерпретация и схема}
+
+Исходные данные представляются обыкновенным неориентированным графом. DQL-схема датасета приводится в
+листинге \ref{lst:roadnet:schema}. Предикат \texttt{id} представляет исходный идентификатор узла, а предикат
+\texttt{successors} --- связанные узлы.
+\begin{listing}[!htb]
+\caption{DQL-схема датасета California Road Network.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/roadnet/schema}
+\label{lst:roadnet:schema}
+\end{listing}
+
+\subsubsection{Запросы}
+
+\paragraph{Запрос \ref{query1}}
+
+В листинге \ref{lst:roadnet:query1_aux} приводится вспомогательный запрос для определения двух узлов с наибольшей
+степенью. Такими являются узлы с \texttt{id} 562\,818 и степенью 12 и \texttt{id} 521\,168 и степенью 10.
+\begin{listing}[!htb]
+\caption{Вспомогательный запрос для определения двух узлов наибольшей степени.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/roadnet/query1_aux}
+\label{lst:roadnet:query1_aux}
+\end{listing}
+
+В листинге \ref{lst:roadnet:query1} приводится запрос \ref{query1}. Поскольку узлы не обладают нетривиальными предикатами,
+для имитации этих предикатов используется \texttt{id}. Так, рекурсивный запрос начинается в узле с
+\texttt{id} 562\,818, завершается на глубине 50, и вершины на пути фильтруются по значению предиката \texttt{id}.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query1} для датасета California Road Network.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/roadnet/query1}
+\label{lst:roadnet:query1}
+\end{listing}
+
+\paragraph{Запрос \ref{query2}}
+
+В листинге \ref{lst:roadnet:query2} приводится запрос \ref{query2}. Выборка запроса тривиальная и совершается по
+значению 562\,818 предиката \texttt{id}.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query2} для датасета California Road Network.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/roadnet/query2}
+\label{lst:roadnet:query2}
+\end{listing}
+
+\paragraph{Запрос \ref{query3}}
+
+В листинге \ref{lst:roadnet:query3} приводится запрос \ref{query3}. Для узла с \texttt{id} 562\,818 проверяется наличие
+связи с узлом, \texttt{id} которого равен 562\,826 (в действительности это непосредственный сосед исходного узла). Далее
+проверяется, что степень узла совпадает с ожидаемой --- с 12.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query3} для датасета California Road Network.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/roadnet/query3}
+\label{lst:roadnet:query3}
+\end{listing}
+
+\paragraph{Запрос \ref{query4}}
+
+В листинге \ref{lst:roadnet:query4} приводится запрос \ref{query4}. Для каждого узла вычисляется среднее арифметическое
+значений \texttt{id} соседних узлов, удовлетворяющих фильтру.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query4} для датасета California Road Network.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/roadnet/query4}
+\label{lst:roadnet:query4}
+\end{listing}
+
+\paragraph{Запрос \ref{query5}}
+
+В листинге \ref{lst:roadnet:query5} приводится запрос \ref{query5}. Поиск кратчайшего пути выполняется между узлами с
+наибольшей степенью. Фильтрация производится по предикату \texttt{id}.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query5} для датасета California Road Network.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/roadnet/query5}
+\label{lst:roadnet:query5}
+\end{listing}
+
+\subsection{Датасет Stablecoin ERC20 Transactions} \label{datasetERC20}
+
+\subsubsection{Описание и структура}
+
+Стейблкоинами называют специальные токены, предназначенные для поддержания фиксированной стоимости в течение долгого
+времени. Датасет Stablecoin ERC20 Transactions~\cite{erc20} содержит данные о более 70 миллионах транзакций ERC20
+пяти популярных стейблкоинов. Описания транзакций распределены по трём файлам датасета, имеющим одинаковую структуру:
+\texttt{token\_transfers.csv} (823 MB), \texttt{token\_transfers\_V2.0.0.csv} (4.4 GB)
+и \texttt{token\_transfers\_V3.0.0.csv} (5.6G B). В файлах определяются \textit{передачи} (transfers), участвующие в
+транзакциях. Описание каждой передачи включает номер блока транзакций, индекс родительской транзакции, количество
+переданных стейблкоинов, временную метку, а также адреса отправителя, получателя и контракта, определяющего стейблкоин.
+Датасет также содержит файл с описанием событий, повлиявших на работу сети, файлы с изменением стоимости стейблкоинов,
+однако объём информации в них незначительный (суммарно, 60 KB), и этими данными можно пренебречь. Далее работа ведётся
+только с файлом \texttt{token\_transfers.csv}.
+
+\subsubsection{Интерпретация и схема}
+
+Исходные данные можно представить ориентированным графом. В отличие от датасета Elliptic++ Transactions, где транзакции
+являются единственными вершинами в графе и непосредственно связаны друг с другом, здесь вершинами графа выступают
+передачи и адреса отправителей, получателей или контрактов. Таким образом, передачи являются посредниками при
+выражении отношения многие ко многим между адресами отправителей и получателей. Направленные рёбра в графе связывают
+\begin{itemize}
+    \item адрес отправителя и передачу;
+    \item передачу и адрес получателя;
+    \item передачу и адрес контракта.
+\end{itemize}
+В листинге \ref{lst:erc20:schema} приводится DQL-схема датасета. Адреса отправителей, получателей и контрактов
+представляются предикатом \texttt{address}. Все передачи некоторого отправителя выражаются предикатом \texttt{from}. Связь
+передачи и получателя описывается предикатом \texttt{to}, и связь передачи и контракта --- предикатом \texttt{contract}.
+\begin{listing}[!htb]
+\caption{DQL-схема датасета Stablecoin ERC20 Transactions.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/erc20/schema}
+\label{lst:erc20:schema}
+\end{listing}
+
+\subsubsection{Запросы}
+
+\paragraph{Запрос \ref{query1}}
+
+В листинге \ref{lst:erc20:greatest_transfers} приводится вспомогательный запрос для определения адреса отправителя
+наибольшего числа передач. Соответствующий предикат \texttt{address} равен
+\texttt{0x74de5d4fcbf63e00296fd95d33236b9794016631}, а количество передач --- 147\,437.
+\begin{listing}[!htb]
+\caption{Вспомогательный запрос для определения адреса отправителя с наибольшим числом передач.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/erc20/greatest_transfers}
+\label{lst:erc20:greatest_transfers}
+\end{listing}
+
+В листинге \ref{lst:erc20:query1} приводится запрос \ref{query1}. Рекурсивный обход выполняется от адреса отправителя
+наибольшего числа передач и до глубины 3. На пути рассматриваются предикат \texttt{from} с фильтрацией по временной
+метке и предикат \texttt{to}.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query1} для датасета Stablecoins ERC20 Transcations.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/erc20/query1}
+\label{lst:erc20:query1}
+\end{listing}
+
+\paragraph{Запрос \ref{query2}}
+
+В листинге \ref{lst:erc20:query2} приводится запрос \ref{query2}. Выборка передач производится по количеству передаваемых
+стейблкоинов.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query2} для датасета Stablecoins ERC20 Transcations.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/erc20/query2}
+\label{lst:erc20:query2}
+\end{listing}
+
+\paragraph{Запрос \ref{query3}}
+
+В листинге \ref{lst:erc20:most_transfers_contract} приводится вспомогательный запрос для определения адреса контракта
+с наибольшим числом передач. Соответствующий \texttt{address} равен \texttt{0xdac17f958d2ee523a2206206994597c13d831ec7}, а
+количество передач --- 2\,652\,911.
+\begin{listing}[!htb]
+\caption{Вспомогательный запрос для определения адреса контракта с наибольшим числом передач.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/erc20/most_transfers_contract}
+\label{lst:erc20:most_transfers_contract}
+\end{listing}
+
+В листинге \ref{lst:erc20:query3} приводится запрос \ref{query3}. Производится фильтрация передач запроса \ref{query2}
+по адресу контракта с наибольшим числом передач. Полученные передачи фильтруются по степени, априори равной 2.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query3} для датасета Stablecoins ERC20 Transcations.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/erc20/query3}
+\label{lst:erc20:query3}
+\end{listing}
+
+\paragraph{Запрос \ref{query4}}
+
+В листинге \ref{lst:erc20:query4} приводится запрос \ref{query4}. Для каждого адреса подсчитывается среднее значение
+передаваемых стейблкоинов связанных передач, удовлетворяющих фильтру.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query4} для датасета Stablecoins ERC20 Transcations.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/erc20/query4}
+\label{lst:erc20:query4}
+\end{listing}
+
+\paragraph{Запрос \ref{query5}}
+
+В листинге \ref{lst:erc20:query5} приводится запрос \ref{query5}. Производится поиск кратчайшего пути между адресом
+отправителя наибольшего числа контрактов и некоторым случайным адресом: например,
+\texttt{0x0000000000000000000000000000000000000000}. Фильтрация по вершинам на пути выполняется по временной метке.
+\begin{listing}[!htb]
+\caption{Запрос \ref{query5} для датасета Stablecoins ERC20 Transcations.}
+\inputminted[frame=single,fontsize=\footnotesize,linenos,breaklines,xleftmargin=1.5em, breaksymbol=""]{text}
+{lst/erc20/query5}
+\label{lst:erc20:query5}
+\end{listing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TEXT WIDTH %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

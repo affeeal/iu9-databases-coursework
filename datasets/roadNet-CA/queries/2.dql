@@ -1,9 +1,0 @@
-{
-  var(func: has(id)) {
-    degree as count(successors)
-  }
-
-  query(func: eq(val(degree), 3)) {
-    uid
-  }
-}

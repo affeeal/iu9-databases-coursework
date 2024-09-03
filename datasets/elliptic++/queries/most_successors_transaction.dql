@@ -1,0 +1,11 @@
+# id=2984918 -> 472 transactions
+{
+  var(func: has(successors)) {
+    succCount as count(successors)
+  }
+  
+  result(func: uid(succCount), orderdesc: val(succCount), first: 1) {
+    id
+    val(succCount)
+  }
+}

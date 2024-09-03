@@ -1,9 +1,10 @@
+# id=562818 -> 12 nodes, id=521168 -> 10 nodes
 {
   start as var(func: eq(id, 562818))
-  end as var(func: eq(id, 562010))
+  end as var(func: eq(id, 521168))
 
   path as shortest(from: uid(start), to: uid(end)) {
-    successors
+    successors @filter(lt(id, 562818))
   }
 
   result(func: uid(path)) {

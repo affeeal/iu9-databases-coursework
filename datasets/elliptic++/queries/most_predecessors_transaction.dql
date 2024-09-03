@@ -1,0 +1,11 @@
+# id=43388675 <- 284 transactions
+{
+  var(func: has(~successors)) {
+    predCount as count(~successors)
+  }
+  
+  result(func: uid(predCount), orderdesc: val(predCount), first: 1) {
+    id
+    val(predCount)
+  }
+}

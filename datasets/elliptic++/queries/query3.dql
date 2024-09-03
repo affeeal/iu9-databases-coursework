@@ -1,0 +1,15 @@
+{
+  transactions as var(func: eq(class, 3)) @cascade(successors) {
+    successors @filter(eq(id, 43388675))
+  }
+
+  var(func: uid(transactions)) {
+    succCount as count(successors)
+    predCount as count(~successors)
+    degree as math(succCount + predCount)
+  }
+
+  result(func: ge(val(degree), 10)) {
+    uid
+  }
+}
