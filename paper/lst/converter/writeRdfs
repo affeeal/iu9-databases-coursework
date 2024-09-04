@@ -1,0 +1,41 @@
+func (f *file) writeRdfs(
+	output *os.File,
+	entitiesFacets map[string]entityFacets,
+	record []string,
+	schema map[string]schemaType,
+	indices map[string]uint,
+) error {
+	for _, rule := range f.Rdfs {
+		objectIndex := indices[rule.Object]
+		if record[objectIndex] == "" {
+			continue
+		}
+		subject := makeBlankNode(
+			makeEntityKey(schema[rule.Subject].prefix, record[indices[rule.Subject]]),
+		)
+		objectType := schema[rule.Object]
+		if rule.CastObjectTo != "" {
+			objectType.dt = dataTypes[rule.CastObjectTo]
+		}
+		var object string
+		if objectType.dt == idType {
+			object = makeBlankNode(
+				makeEntityKey(objectType.prefix, record[objectIndex]),
+			)
+		} else {
+			object = record[objectIndex]
+		}
+                // Для краткости, опущен код наполнения среза facets
+		r := rdf.NewRdf(
+			rdf.NewTerm(subject, rdf.NONE),
+			rdf.NewTerm(rule.Predicat, rdf.ANGLE_BRACKETS),
+			rdf.NewTerm(object, termDecorations[objectType.dt]),
+			facets,
+		)
+                _, err := output.WriteString(r.Stringln())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

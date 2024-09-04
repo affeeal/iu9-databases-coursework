@@ -1,0 +1,5 @@
+{
+  result(func: eq(value, 1000)) {
+    uid
+  }
+}

@@ -1,0 +1,15 @@
+{
+  actions as var(func: eq(label, 0)) @cascade(on) {
+    on @filter(eq(targetId, 8))
+  }
+
+  var(func: uid(actions)) {
+    targetsCount as count(on)
+    usersCount as count(~performs)
+    degree as math(targetsCount + usersCount)
+  }
+
+  result(func: eq(val(degree), 2)) {
+    uid
+  }
+}

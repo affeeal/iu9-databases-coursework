@@ -1,0 +1,44 @@
+---
+files:
+  - name: txs_features.csv
+    declarations:
+      - name: txId
+        type: id
+      - name: Time step
+        type: int
+      - name: Local_feature_1
+        type: float
+      # Остальные объявления...
+    rdfs:
+      - subject: txId
+        predicat: id
+        object: txId
+        cast_object_to: int
+      - subject: txId
+        predicat: Time_step
+        object: Time step
+      - subject: txId
+        predicat: Local_feature_1
+        object: Local_feature_1
+      - subject: txId
+      # Остальные правила...
+  - name: txs_classes.csv
+    declarations:
+      - name: txId
+        type: id
+      - name: class
+        type: int
+    rdfs:
+      - subject: txId
+        predicat: class
+        object: class
+  - name: txs_edgelist.csv
+    declarations:
+      - name: txId1
+        type: id
+      - name: txId2
+        type: id
+    rdfs:
+      - subject: txId1
+        predicat: successors
+        object: txId2

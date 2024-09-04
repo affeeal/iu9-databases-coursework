@@ -1,0 +1,10 @@
+{
+  var(func: has(performs)) {
+    actCount as count(performs)
+  }
+
+  result(func: uid(actCount), orderdesc: val(actCount), first: 2) {
+    userId
+    val(actCount)
+  }
+}

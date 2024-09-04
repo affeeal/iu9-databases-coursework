@@ -1,0 +1,10 @@
+{
+  var(func: has(targetId)) {
+    actCount as count(~on)
+  }
+
+  result(func: uid(actCount), orderdesc: val(actCount), first: 1) {
+    targetId
+    val(actCount)
+  }
+}

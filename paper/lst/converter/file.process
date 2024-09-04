@@ -1,0 +1,45 @@
+func (f *file) process(
+	entitiesFacets map[string]entityFacets,
+	output *os.File,
+	sourcesPath string,
+) error {
+	schema, err := f.validate()
+	if err != nil {
+		return err
+	}
+	source, err := os.Open(filepath.Join(sourcesPath, f.Name))
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+	reader := csv.NewReader(source)
+	err = f.adjustReader(reader)
+	if err != nil {
+		return err
+	}
+	headers, err := reader.Read()
+	if err != nil {
+		return err
+	}
+	headers = append(headers, f.ArtificialDeclaration.Name)
+	indices := make(map[string]uint)
+	for i, header := range headers {
+		indices[header] = uint(i)
+	}
+	for artificialId := 0; true; artificialId++ {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		record = append(record, fmt.Sprint(artificialId))
+		f.saveFacets(entitiesFacets, record, schema, indices)
+		err = f.writeRdfs(output, entitiesFacets, record, schema, indices)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

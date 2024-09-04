@@ -1,0 +1,20 @@
+{
+  var(func: has(id)) {
+    successors @filter(le(Local_feature_1, -0.15)) {
+      succFeat as Local_feature_1
+    }
+    succAvgFeat as avg(val(succFeat))
+  }
+
+  var(func: has(id)) {
+    ~successors @filter(le(Local_feature_1, -0.15)) {
+      predFeat as Local_feature_1
+    }
+    predAvgFeat as avg(val(predFeat))
+  }
+
+  result(func: has(id)) {
+    uid
+    avgFeat : math((succAvgFeat + predAvgFeat) / 2)
+  }
+}

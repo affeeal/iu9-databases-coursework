@@ -1,0 +1,6 @@
+{
+  result(func: eq(id, 562818)) @recurse(depth: 50) @ignorereflex {
+    uid
+    successors @filter(lt(id, 562818))
+  }
+}

@@ -1,0 +1,19 @@
+func getDgraphClient(host string, port uint) (*dgo.Dgraph, cancelFunc) {
+	conn, err := grpc.Dial(
+		formTarget(host, port),
+		grpc.WithDefaultCallOptions(
+			grpc.MaxCallRecvMsgSize(grpcMaxRecieveBytes),
+		),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dc := api.NewDgraphClient(conn)
+	return dgo.NewDgraphClient(dc), func() {
+		if err := conn.Close(); err != nil {
+			log.Fatal(err)
+		}
+	}
+}

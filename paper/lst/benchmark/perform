@@ -1,0 +1,40 @@
+func performQuery(
+	dg *dgo.Dgraph,
+	query string,
+	duration time.Duration,
+	printRespond bool,
+) {
+	memoryBefore := memory.FreeMemory()
+	var memoryMinimum uint64 = math.MaxUint64
+	quit := make(chan bool)
+	go func() {
+		for {
+			select {
+			case <-quit:
+				break
+			default:
+				freeMemory := memory.FreeMemory()
+				if freeMemory < memoryMinimum {
+					memoryMinimum = freeMemory
+				}
+				time.Sleep(duration)
+			}
+		}
+	}()
+
+	txn := dg.NewReadOnlyTxn().BestEffort()
+	resp, err := txn.Query(context.Background(), query)
+	if err != nil {
+		log.Fatal(err)
+	}
+	quit <- true
+
+	log.Printf("Free RAM before the execution: %d bytes.\n", memoryBefore)
+	log.Printf("Free RAM minimum during the execution: %d bytes.\n", memoryMinimum)
+	log.Printf("Free RAM consumption: %d bytes.\n", memoryBefore-memoryMinimum)
+	log.Printf("Request latency: %d nanoseconds.\n", resp.Latency.GetTotalNs())
+
+	if printRespond {
+		prettyPrintJson(resp.GetJson())
+	}
+}

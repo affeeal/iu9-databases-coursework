@@ -1,0 +1,15 @@
+{
+  start as var(func: eq(userId, 1181))
+  end as var(func: eq(userId, 1686))
+
+  path as shortest(from: uid(start), to: uid(end)) @ignorereflex {
+    performs @filter(ge(timestamp, 1_500_000))
+    ~performs
+    on
+    ~on @filter(ge(timestamp, 1_500_000))
+  }
+
+  result(func: uid(path)) {
+    uid
+  }
+}

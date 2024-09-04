@@ -1,0 +1,5 @@
+{
+  result(func: eq(class, 3)) {
+    uid
+  }
+}

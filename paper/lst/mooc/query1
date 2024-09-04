@@ -1,0 +1,9 @@
+{
+  result(func: eq(userId, 1181)) @recurse(depth: 5) @ignorereflex {
+    uid
+    performs @filter(ge(timestamp, 1_500_000))
+    on
+    ~on @filter(ge(timestamp, 1_500_000))
+    ~performs
+  }
+}

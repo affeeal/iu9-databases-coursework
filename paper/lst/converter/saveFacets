@@ -1,0 +1,21 @@
+func (file *file) saveFacets(
+	entitiesFacets map[string]entityFacets,
+	record []string,
+	schema map[string]schemaType,
+	indices map[string]uint,
+) {
+	for _, rule := range file.EntityFacets {
+		addFacet(
+			entitiesFacets,
+			makeEntityKey(
+				schema[rule.Id].prefix,
+				record[indices[rule.Id]],
+			),
+			rule.Key,
+			rdf.NewTerm(
+				record[indices[rule.Value]],
+				facetDecorations[schema[rule.Value].dt],
+			),
+		)
+	}
+}

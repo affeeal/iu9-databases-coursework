@@ -1,0 +1,46 @@
+type Rdf struct {
+	subject  *Term
+	predicat *Term
+	object   *Term
+	facets   []*Facet
+}
+
+func NewRdf(
+	subject *Term,
+	predicat *Term,
+	object *Term,
+	facets []*Facet,
+) *Rdf {
+	return &Rdf{
+		subject:  subject,
+		predicat: predicat,
+		object:   object,
+		facets:   facets,
+	}
+}
+
+func (rdf *Rdf) String() string {
+	facets := ""
+	if len(rdf.facets) > 0 {
+		facets = "("
+		for i, facet := range rdf.facets {
+			if i > 0 {
+				facets += ", "
+			}
+			facets += facet.key + "=" + facet.term.String()
+		}
+		facets += ") "
+	}
+
+	return fmt.Sprintf(
+		"%s %s %s %s.",
+		rdf.subject.String(),
+		rdf.predicat.String(),
+		rdf.object.String(),
+		facets,
+	)
+}
+
+func (rdf *Rdf) Stringln() string {
+	return rdf.String() + "\n"
+}

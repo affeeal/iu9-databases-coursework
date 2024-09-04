@@ -1,0 +1,19 @@
+func ProcessDataset(datasetPath string) error {
+	const configName = "convert.yml"
+
+	config, err := os.Open(filepath.Join(datasetPath, configName))
+	if err != nil {
+		return err
+	}
+	defer config.Close()
+
+	decoder := yaml.NewDecoder(config)
+	decoder.KnownFields(true)
+
+	var ds dataset
+	if err = decoder.Decode(&ds); err != nil {
+		return err
+	}
+
+	return ds.process(datasetPath)
+}

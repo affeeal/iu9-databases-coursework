@@ -1,0 +1,10 @@
+{
+  var(func: has(from)) {
+    tranCount as count(from)
+  }
+
+  result(func: uid(tranCount), orderdesc: val(tranCount), first: 1) {
+    address
+    val(tranCount)
+  }
+}

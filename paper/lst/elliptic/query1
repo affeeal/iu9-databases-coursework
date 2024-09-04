@@ -1,0 +1,6 @@
+{
+  result(func: eq(id, 2984918)) @recurse(depth: 50) {
+    uid
+    successors @filter(lt(Time_step, 25))
+  }
+}

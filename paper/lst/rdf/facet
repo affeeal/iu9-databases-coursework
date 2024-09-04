@@ -1,0 +1,8 @@
+type Facet struct {
+	key  string
+	term *Term
+}
+
+func NewFacet(key string, term *Term) *Facet {
+	return &Facet{key: key, term: term}
+}

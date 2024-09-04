@@ -1,0 +1,23 @@
+func (ds *dataset) process(datasetPath string) error {
+	const (
+		outputName  = "output.rdf"
+		sourcesName = "sources"
+	)
+
+	output, err := os.Create(filepath.Join(datasetPath, outputName))
+	if err != nil {
+		return err
+	}
+	defer output.Close()
+
+	sourcesPath := filepath.Join(datasetPath, sourcesName)
+	entitiesFacets := make(map[string]entityFacets)
+
+	for _, f := range ds.Files {
+		if err = f.process(entitiesFacets, output, sourcesPath); err != nil {
+			return errors.Wrap(err, f.Name)
+		}
+	}
+
+	return nil
+}

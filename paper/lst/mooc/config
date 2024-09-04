@@ -1,0 +1,39 @@
+---
+files:
+  - name: mooc_actions.tsv
+    delimiter: "\t"
+    declarations:
+      - name: ACTIONID
+        type: id
+        prefix: a
+      - name: USERID
+        type: id
+        prefix: u
+      - name: TARGETID
+        type: id
+        prefix: t
+      - name: TIMESTAMP
+        type: float
+    rdfs:
+      - subject: ACTIONID
+        predicat: actionId
+        object: ACTIONID
+        cast_object_to: int
+      - subject: USERID
+        predicat: userId
+        object: USERID
+        cast_object_to: int
+      - subject: TARGETID
+        predicat: targetId
+        object: TARGETID
+        cast_object_to: int
+      - subject: ACTIONID
+        predicat: timestamp
+        object: TIMESTAMP
+      - subject: USERID
+        predicat: performs
+        object: ACTIONID
+      - subject: ACTIONID
+        predicat: on
+        object: TARGETID
+    # Остальные файлы...

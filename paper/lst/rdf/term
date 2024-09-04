@@ -1,0 +1,29 @@
+type Decoration uint8
+
+const (
+	NONE Decoration = iota
+	QUOTES
+	ANGLE_BRACKETS
+)
+
+type Term struct {
+	val string
+	dec Decoration
+}
+
+func NewTerm(val string, dec Decoration) *Term {
+	return &Term{val: val, dec: dec}
+}
+
+func (term *Term) String() string {
+	switch term.dec {
+	case NONE:
+		return term.val
+	case QUOTES:
+		return `"` + term.val + `"`
+	case ANGLE_BRACKETS:
+		return "<" + term.val + ">"
+	}
+
+	return ""
+}

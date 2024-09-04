@@ -1,0 +1,8 @@
+address: string @index(hash) .
+from: [uid] @reverse .
+to: uid @reverse .
+contract: uid .
+block_number: int .
+transaction_index: int .
+time_stamp: int .
+value: float @index(float) .

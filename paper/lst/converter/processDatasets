@@ -1,0 +1,29 @@
+func ProcessDatasets(datasetsPath string) error {
+	entires, err := os.ReadDir(datasetsPath)
+	if err != nil {
+		return err
+	}
+
+	g := new(errgroup.Group)
+	for _, entry := range entires {
+		if !entry.IsDir() {
+			continue
+		}
+
+		datasetName := entry.Name()
+		g.Go(func() error {
+			err := errors.Wrap(
+				ProcessDataset(filepath.Join(datasetsPath, datasetName)),
+				datasetName,
+			)
+			if err != nil {
+				log.Println("Error while processing dataset", err)
+			} else {
+				log.Println("Successfully processed dataset", datasetName)
+			}
+			return err
+		})
+	}
+
+	return g.Wait()
+}

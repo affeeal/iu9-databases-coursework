@@ -1,0 +1,13 @@
+{
+  var(func: has(id)) {
+    successors @filter(lt(id, 562818)) {
+      feature as id
+    }
+    avgFeature as avg(val(feature))
+  }
+
+  result(func: uid(avgFeature)) {
+    uid
+    val(avgFeature)
+  }
+}

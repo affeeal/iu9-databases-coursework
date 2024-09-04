@@ -1,0 +1,6 @@
+id: int @index(int) .
+Time_step: int .
+Local_feature_1: float .
+class: int @index(int) .
+successors: [uid] @reverse .
+# Остальные 181 предикат...

@@ -1,5 +1,4 @@
-/paper/_minted-main
-/paper/lst
+/paper/_minted-*
 *.rdf
 *.csv
 *.tsv
