@@ -1,0 +1,8 @@
+_:p1 <name> "Alice" (note="hello \"graph\"\\world", score=7) .
+_:p1 <note> "hello \"graph\"\\world" .
+_:p1 <score> "7" .
+_:p1 <external_id> "1" .
+_:p2 <name> "Bob" (note="line\nbreak", score=8) .
+_:p2 <note> "line\nbreak" .
+_:p2 <score> "8" .
+_:p2 <external_id> "2" .

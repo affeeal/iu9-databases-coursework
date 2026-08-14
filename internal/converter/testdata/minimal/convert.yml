@@ -1,0 +1,34 @@
+files:
+  - name: people.csv
+    declarations:
+      - name: person
+        type: id
+        prefix: p
+      - name: name
+        type: string
+      - name: score
+        type: int
+      - name: note
+        type: string
+    entity_facets:
+      - id: person
+        key: score
+        value: score
+      - id: person
+        key: note
+        value: note
+    rdfs:
+      - subject: person
+        predicate: name
+        object: name
+        entity_facets_id: person
+      - subject: person
+        predicate: note
+        object: note
+      - subject: person
+        predicate: score
+        object: score
+      - subject: person
+        predicate: external_id
+        object: person
+        cast_object_to: string

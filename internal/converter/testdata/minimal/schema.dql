@@ -1,0 +1,4 @@
+name: string @index(exact) .
+note: string .
+score: int .
+external_id: string @index(exact) .

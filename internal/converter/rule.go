@@ -4,7 +4,7 @@ import "github.com/pkg/errors"
 
 type rdfRule struct {
 	Subject        string      `yaml:"subject"`
-	Predicat       string      `yaml:"predicat"`
+	Predicate      string      `yaml:"predicate"`
 	Object         string      `yaml:"object"`
 	CastObjectTo   string      `yaml:"cast_object_to"`
 	Facets         []facetRule `yaml:"facets"`
@@ -83,7 +83,7 @@ func validateSchemaType(
 	}
 
 	if isId := (st.dt == idType); isId != supposedToBeId {
-		if isId {
+		if supposedToBeId {
 			return errors.New(context + " " + name + " data type must be an id")
 		}
 

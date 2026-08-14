@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
+	"unicode/utf8"
 
 	"github.com/affeeal/iu9-databases-coursework/internal/rdf"
 	"github.com/pkg/errors"
@@ -85,7 +87,12 @@ func (f *file) process(
 		return err
 	}
 
-	headers = append(headers, f.ArtificialDeclaration.Name)
+	if err := f.validateHeaders(headers); err != nil {
+		return err
+	}
+	if !f.ArtificialDeclaration.empty() {
+		headers = append(headers, f.ArtificialDeclaration.Name)
+	}
 	indices := make(map[string]uint)
 	for i, header := range headers {
 		indices[header] = uint(i)
@@ -100,7 +107,9 @@ func (f *file) process(
 			return err
 		}
 
-		record = append(record, fmt.Sprint(artificialId))
+		if !f.ArtificialDeclaration.empty() {
+			record = append(record, fmt.Sprint(artificialId))
+		}
 		f.saveFacets(entitiesFacets, record, schema, indices)
 		err = f.writeRdfs(output, entitiesFacets, record, schema, indices)
 		if err != nil {
@@ -108,6 +117,35 @@ func (f *file) process(
 		}
 	}
 
+	return nil
+}
+
+func (f *file) validateHeaders(headers []string) error {
+	seen := make(map[string]struct{}, len(headers))
+	for _, header := range headers {
+		if _, exists := seen[header]; exists {
+			return fmt.Errorf("%s: duplicate input header %q", f.Name, header)
+		}
+		seen[header] = struct{}{}
+	}
+	for _, declaration := range f.Declarations {
+		if _, exists := seen[declaration.Name]; !exists {
+			return fmt.Errorf(
+				"%s: missing declared column %q",
+				f.Name,
+				declaration.Name,
+			)
+		}
+	}
+	if !f.ArtificialDeclaration.empty() {
+		if _, exists := seen[f.ArtificialDeclaration.Name]; exists {
+			return fmt.Errorf(
+				"%s: artificial column %q duplicates an input header",
+				f.Name,
+				f.ArtificialDeclaration.Name,
+			)
+		}
+	}
 	return nil
 }
 
@@ -174,13 +212,13 @@ func (f *file) adjustReader(reader *csv.Reader) error {
 }
 
 func validateSymbol(rawSymbol string) (rune, error) {
-	if len(rawSymbol) != 1 {
+	if !utf8.ValidString(rawSymbol) || utf8.RuneCountInString(rawSymbol) != 1 {
 		return 0, errors.New(
 			"special symbol " + rawSymbol + " must be a single rune",
 		)
 	}
 
-	symbol := rune(rawSymbol[0])
+	symbol, _ := utf8.DecodeRuneInString(rawSymbol)
 	if symbol == '\r' || symbol == '\n' {
 		return 0, errors.New(`special symbol must not be \r, \n`)
 	}
@@ -272,7 +310,7 @@ func (f *file) writeRdfs(
 
 		r := rdf.NewRdf(
 			rdf.NewTerm(subject, rdf.NONE),
-			rdf.NewTerm(rule.Predicat, rdf.ANGLE_BRACKETS),
+			rdf.NewTerm(rule.Predicate, rdf.ANGLE_BRACKETS),
 			rdf.NewTerm(object, termDecorations[objectType.dt]),
 			facets,
 		)
@@ -301,7 +339,13 @@ func addFacet(
 
 func convertFacets(ef entityFacets) []*rdf.Facet {
 	s := make([]*rdf.Facet, 0, len(ef))
-	for key, term := range ef {
+	keys := make([]string, 0, len(ef))
+	for key := range ef {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		term := ef[key]
 		s = append(s, rdf.NewFacet(key, term))
 	}
 	return s

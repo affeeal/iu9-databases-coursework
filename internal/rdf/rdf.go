@@ -1,6 +1,9 @@
 package rdf
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Decoration uint8
 
@@ -24,12 +27,41 @@ func (term *Term) String() string {
 	case NONE:
 		return term.val
 	case QUOTES:
-		return `"` + term.val + `"`
+		return `"` + escapeString(term.val) + `"`
 	case ANGLE_BRACKETS:
 		return "<" + term.val + ">"
 	}
 
 	return ""
+}
+
+func escapeString(value string) string {
+	var escaped strings.Builder
+	for _, char := range value {
+		switch char {
+		case '\\':
+			escaped.WriteString(`\\`)
+		case '"':
+			escaped.WriteString(`\"`)
+		case '\t':
+			escaped.WriteString(`\t`)
+		case '\b':
+			escaped.WriteString(`\b`)
+		case '\n':
+			escaped.WriteString(`\n`)
+		case '\r':
+			escaped.WriteString(`\r`)
+		case '\f':
+			escaped.WriteString(`\f`)
+		default:
+			if char < 0x20 || char == 0x7f {
+				fmt.Fprintf(&escaped, `\u%04X`, char)
+			} else {
+				escaped.WriteRune(char)
+			}
+		}
+	}
+	return escaped.String()
 }
 
 type Facet struct {
@@ -42,23 +74,23 @@ func NewFacet(key string, term *Term) *Facet {
 }
 
 type Rdf struct {
-	subject  *Term
-	predicat *Term
-	object   *Term
-	facets   []*Facet
+	subject   *Term
+	predicate *Term
+	object    *Term
+	facets    []*Facet
 }
 
 func NewRdf(
 	subject *Term,
-	predicat *Term,
+	predicate *Term,
 	object *Term,
 	facets []*Facet,
 ) *Rdf {
 	return &Rdf{
-		subject:  subject,
-		predicat: predicat,
-		object:   object,
-		facets:   facets,
+		subject:   subject,
+		predicate: predicate,
+		object:    object,
+		facets:    facets,
 	}
 }
 
@@ -75,13 +107,16 @@ func (rdf *Rdf) String() string {
 		facets += ") "
 	}
 
-	return fmt.Sprintf(
-		"%s %s %s %s.",
+	result := fmt.Sprintf(
+		"%s %s %s",
 		rdf.subject.String(),
-		rdf.predicat.String(),
+		rdf.predicate.String(),
 		rdf.object.String(),
-		facets,
 	)
+	if facets != "" {
+		result += " " + strings.TrimSuffix(facets, " ")
+	}
+	return result + " ."
 }
 
 func (rdf *Rdf) Stringln() string {

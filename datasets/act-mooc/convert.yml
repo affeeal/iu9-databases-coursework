@@ -10,7 +10,7 @@ files:
         type: int
     rdfs:
       - subject: ACTIONID
-        predicat: label
+        predicate: label
         object: LABEL
   - name: mooc_action_features.tsv
     delimiter: "\t"
@@ -28,16 +28,16 @@ files:
         type: float
     rdfs:
       - subject: ACTIONID
-        predicat: feature0
+        predicate: feature0
         object: FEATURE0
       - subject: ACTIONID
-        predicat: feature1
+        predicate: feature1
         object: FEATURE1
       - subject: ACTIONID
-        predicat: feature2
+        predicate: feature2
         object: FEATURE2
       - subject: ACTIONID
-        predicat: feature3
+        predicate: feature3
         object: FEATURE3
   - name: mooc_actions.tsv
     delimiter: "\t"
@@ -55,23 +55,23 @@ files:
         type: float
     rdfs:
       - subject: ACTIONID
-        predicat: actionId
+        predicate: actionId
         object: ACTIONID
         cast_object_to: int
       - subject: USERID
-        predicat: userId
+        predicate: userId
         object: USERID
         cast_object_to: int
       - subject: TARGETID
-        predicat: targetId
+        predicate: targetId
         object: TARGETID
         cast_object_to: int
       - subject: ACTIONID
-        predicat: timestamp
+        predicate: timestamp
         object: TIMESTAMP
       - subject: USERID
-        predicat: performs
+        predicate: performs
         object: ACTIONID
       - subject: ACTIONID
-        predicat: on
+        predicate: on
         object: TARGETID

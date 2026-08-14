@@ -4,8 +4,8 @@ services:
     volumes:
       - dgraph:/dgraph
     ports:
-      - 5080:5080
-      - 6080:6080
+      - "127.0.0.1:5080:5080"
+      - "127.0.0.1:6080:6080"
     restart: on-failure
     command: dgraph zero --my=zero:5080
 
@@ -14,16 +14,24 @@ services:
     volumes:
       - dgraph:/dgraph
     ports:
-      - 8080:8080
-      - 9080:9080
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:9080:9080"
     restart: on-failure
-    command: dgraph alpha --my=alpha:7080 --zero=zero:5080 --security \
-             whitelist=0.0.0.0/0 --limit query-edge=10000000
-
-  ratel:
-    image: dgraph/ratel:latest
-    ports:
-      - 8000:8000
+    depends_on:
+      zero:
+        condition: service_started
+    command: >-
+      dgraph alpha
+      --my=alpha:7080
+      --zero=zero:5080
+      --security whitelist=127.0.0.1,172.30.0.1
+      --limit query-edge=10000000
 
 volumes:
   dgraph:
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24

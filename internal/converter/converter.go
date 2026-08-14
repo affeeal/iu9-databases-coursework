@@ -11,13 +11,13 @@ import (
 )
 
 func ProcessDatasets(datasetsPath string) error {
-	entires, err := os.ReadDir(datasetsPath)
+	entries, err := os.ReadDir(datasetsPath)
 	if err != nil {
 		return err
 	}
 
 	g := new(errgroup.Group)
-	for _, entry := range entires {
+	for _, entry := range entries {
 		if !entry.IsDir() {
 			continue
 		}

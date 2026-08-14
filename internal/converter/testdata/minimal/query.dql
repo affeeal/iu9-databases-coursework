@@ -1,0 +1,8 @@
+{
+  people(func: has(name), orderasc: external_id) {
+    external_id
+    name
+    note
+    score
+  }
+}

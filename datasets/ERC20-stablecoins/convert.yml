@@ -25,35 +25,35 @@ files:
       prefix: t
     rdfs:
       - subject: from_address
-        predicat: address
+        predicate: address
         object: from_address
         cast_object_to: string
       - subject: to_address
-        predicat: address
+        predicate: address
         object: to_address
         cast_object_to: string
       - subject: contract_address
-        predicat: address
+        predicate: address
         object: contract_address
         cast_object_to: string
       - subject: from_address
-        predicat: from
+        predicate: from
         object: transfer
       - subject: transfer
-        predicat: contract
+        predicate: contract
         object: contract_address
       - subject: transfer
-        predicat: to
+        predicate: to
         object: to_address
       - subject: transfer
-        predicat: block_number
+        predicate: block_number
         object: block_number
       - subject: transfer
-        predicat: transaction_index
+        predicate: transaction_index
         object: transaction_index
       - subject: transfer
-        predicat: time_stamp
+        predicate: time_stamp
         object: time_stamp
       - subject: transfer
-        predicat: value
+        predicate: value
         object: value

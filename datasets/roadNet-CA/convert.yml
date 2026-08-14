@@ -10,13 +10,13 @@ files:
         type: id
     rdfs:
       - subject: FromNodeId
-        predicat: successors
+        predicate: successors
         object: ToNodeId
       - subject: FromNodeId
-        predicat: id
+        predicate: id
         object: FromNodeId
         cast_object_to: int
       - subject: ToNodeId
-        predicat: id
+        predicate: id
         object: ToNodeId
         cast_object_to: int
