@@ -11,18 +11,32 @@ jobs:
   go:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    strategy:
+      matrix:
+        go: ['1.25.x', 'stable']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version: ${{ matrix.go }}
           cache: true
       - name: Check formatting
         run: test -z "$(gofmt -l $(find . -name '*.go' -type f))"
       - name: Vet
         run: go vet ./...
+      - name: Build
+        run: go build ./...
+      - name: CLI help
+        run: |
+          go run ./cmd/converter -help
+          go run ./cmd/benchmark -help
+      - name: Check shell scripts
+        run: shellcheck scripts/*.sh
       - name: Test with race detector
         run: go test -race ./...
+      - name: Check reachable vulnerabilities
+        if: matrix.go == 'stable'
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...
       - name: Validate Compose configuration
         run: docker compose config --quiet
       - name: Convert the minimal fixture

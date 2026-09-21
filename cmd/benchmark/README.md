@@ -6,7 +6,7 @@ for reproducing the coursework workflow, not for profiler-quality process
 accounting.
 
 ```sh
-go run ./cmd/benchmark -- \
+go run ./cmd/benchmark \
   -query-path datasets/roadNet-CA/queries/query2.dql \
   -host localhost \
   -port 9080 \
@@ -25,8 +25,8 @@ go run ./cmd/benchmark -- \
 - `-query-timeout` (default `30s`): positive upper bound for the query;
 - `-print-response` (default `false`): pretty-print the JSON response.
 
-The old misspelled `-print-respond` flag has been removed; invalid flags and
-values return a nonzero status.
+Invalid flags and values return a nonzero status; `-help` prints usage and exits
+successfully. IPv6 hosts are accepted, for example `-host ::1`.
 
 ## Output
 

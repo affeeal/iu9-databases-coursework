@@ -1,6 +1,7 @@
 ---
 files:
   - name: roadNet-CA.txt
+    headers: [FromNodeId, ToNodeId]
     delimiter: "\t"
     comment: "#"
     declarations:

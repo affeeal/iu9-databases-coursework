@@ -8,6 +8,10 @@ func TestDeclarationValidation(t *testing.T) {
 		declarations []declaration
 	}{
 		{
+			name:         "empty name",
+			declarations: []declaration{{Type: "id"}},
+		},
+		{
 			name: "duplicate name",
 			declarations: []declaration{
 				{Name: "id", Type: "id"},

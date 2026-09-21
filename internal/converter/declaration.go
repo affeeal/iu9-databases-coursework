@@ -9,6 +9,9 @@ type declaration struct {
 }
 
 func (d *declaration) validate(schema map[string]schemaType) error {
+	if d.Name == "" {
+		return errors.New("declaration name must not be empty")
+	}
 	if _, ok := schema[d.Name]; ok {
 		return errors.New("Schema name " + d.Name + " redefinition")
 	}

@@ -34,5 +34,15 @@ the corresponding `sources/` directory with the filenames declared by
 licensing and permitted reuse are controlled by the upstream providers; review
 their current terms before use.
 
+For `roadNet-CA`, unpack the upstream `.gz` into `sources/roadNet-CA.txt`
+without modifying its comment lines. Its configuration supplies explicit
+`headers` because the upstream column names are part of a comment. The other
+configurations read column names from the first CSV/TSV record.
+
+Load each dataset into a separate Dgraph data volume. The RDF uses blank-node
+labels: loading it repeatedly is not an idempotent update and may duplicate
+nodes. Query results also depend on the matching schema and complete source
+files; the tiny fixture only exercises the import workflow.
+
 For an offline example that requires no external download, use the committed
 [minimal fixture](../internal/converter/testdata/minimal).

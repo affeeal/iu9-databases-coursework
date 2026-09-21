@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -8,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/affeeal/iu9-databases-coursework/internal/rdf"
+	"gopkg.in/yaml.v3"
 )
 
 func TestValidateSymbol(t *testing.T) {
@@ -22,6 +24,9 @@ func TestValidateSymbol(t *testing.T) {
 		{name: "empty", wantError: true},
 		{name: "two runes", input: "ab", wantError: true},
 		{name: "newline", input: "\n", wantError: true},
+		{name: "NUL", input: "\x00", wantError: true},
+		{name: "quote", input: "\"", wantError: true},
+		{name: "replacement character", input: "\uFFFD", wantError: true},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
@@ -106,12 +111,10 @@ func TestValidateSchemaTypeDiagnostics(t *testing.T) {
 }
 
 func TestProcessDatasetFixture(t *testing.T) {
-	datasetPath := filepath.Join("testdata", "minimal")
+	datasetPath := copyMinimalDataset(t)
 	if err := ProcessDataset(datasetPath); err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { _ = os.Remove(filepath.Join(datasetPath, "output.rdf")) })
-
 	actual, err := os.ReadFile(filepath.Join(datasetPath, "output.rdf"))
 	if err != nil {
 		t.Fatal(err)
@@ -122,6 +125,153 @@ func TestProcessDatasetFixture(t *testing.T) {
 	}
 	if string(actual) != string(expected) {
 		t.Fatalf("unexpected RDF output:\n%s", actual)
+	}
+}
+
+func copyMinimalDataset(t *testing.T) string {
+	t.Helper()
+	destination := t.TempDir()
+	if err := os.Mkdir(filepath.Join(destination, "sources"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"convert.yml", "expected.rdf", "sources/people.csv"} {
+		contents, err := os.ReadFile(filepath.Join("testdata", "minimal", name))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(destination, name), contents, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	return destination
+}
+
+func TestProcessDatasetRejectsInvalidConfigWithoutReplacingOutput(t *testing.T) {
+	for _, config := range []string{
+		"", "{}", "null", "files: []", "files: null", "unknown: true",
+		"files: []\n---\nfiles: []\n",
+	} {
+		t.Run(config, func(t *testing.T) {
+			directory := t.TempDir()
+			if err := os.WriteFile(filepath.Join(directory, "convert.yml"), []byte(config), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			output := filepath.Join(directory, "output.rdf")
+			if err := os.WriteFile(output, []byte("keep me"), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			if err := ProcessDataset(directory); err == nil {
+				t.Fatal("invalid config unexpectedly succeeded")
+			}
+			got, err := os.ReadFile(output)
+			if err != nil || string(got) != "keep me" {
+				t.Fatalf("previous output was not preserved: %q, %v", got, err)
+			}
+		})
+	}
+}
+
+func TestProcessDatasetRejectsAdditionalYAMLDocument(t *testing.T) {
+	directory := copyMinimalDataset(t)
+	path := filepath.Join(directory, "convert.yml")
+	config, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config = append(config, []byte("\n---\nfiles: []\n")...)
+	if err := os.WriteFile(path, config, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := ProcessDataset(directory); err == nil || !strings.Contains(err.Error(), "exactly one") {
+		t.Fatalf("expected multiple-document error, got %v", err)
+	}
+}
+
+func TestProcessHeaderlessRoadNetwork(t *testing.T) {
+	directory := t.TempDir()
+	if err := os.Mkdir(filepath.Join(directory, "sources"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	config, err := os.ReadFile(filepath.Join("..", "..", "datasets", "roadNet-CA", "convert.yml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(directory, "convert.yml"), config, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	data := "# Directed graph\n# FromNodeId\tToNodeId\n0\t1\n1\t2\n"
+	if err := os.WriteFile(filepath.Join(directory, "sources", "roadNet-CA.txt"), []byte(data), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := ProcessDataset(directory); err != nil {
+		t.Fatal(err)
+	}
+	got, err := os.ReadFile(filepath.Join(directory, "output.rdf"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "_:0 <successors> _:1 .\n_:0 <id> \"0\" .\n_:1 <id> \"1\" .\n" +
+		"_:1 <successors> _:2 .\n_:1 <id> \"1\" .\n_:2 <id> \"2\" .\n"
+	if string(got) != want {
+		t.Fatalf("unexpected headerless conversion:\n%s", got)
+	}
+}
+
+func TestFileRejectsInvalidSourcePath(t *testing.T) {
+	for _, name := range []string{"", "../outside.csv", "/outside.csv"} {
+		input := file{Name: name}
+		if _, err := input.validate(); err == nil {
+			t.Errorf("invalid source path %q accepted", name)
+		}
+	}
+}
+
+func TestEmptyEntityIDsAreRejected(t *testing.T) {
+	schema := map[string]schemaType{"id": {dt: idType, prefix: "p"}, "value": {dt: stringType}}
+	indices := map[string]uint{"id": 0, "value": 1}
+	record := []string{"", "Alice"}
+	input := file{
+		Rdfs:         []rdfRule{{Subject: "id", Predicate: "name", Object: "value"}},
+		EntityFacets: []entityFacetRule{{Id: "id", facetRule: facetRule{Key: "name", Value: "value"}}},
+	}
+	var output bytes.Buffer
+	if err := input.writeRdfs(&output, nil, record, schema, indices); err == nil {
+		t.Fatal("empty subject was accepted")
+	}
+	if err := input.saveFacets(make(map[string]entityFacets), record, schema, indices); err == nil {
+		t.Fatal("empty facet entity ID was accepted")
+	}
+}
+
+func TestCommittedDatasetConfigurations(t *testing.T) {
+	paths, err := filepath.Glob(filepath.Join("..", "..", "datasets", "*", "convert.yml"))
+	if err != nil || len(paths) != 4 {
+		t.Fatalf("expected four dataset configs, got %v (%v)", paths, err)
+	}
+	for _, path := range paths {
+		t.Run(filepath.Base(filepath.Dir(path)), func(t *testing.T) {
+			config, err := os.Open(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer config.Close()
+			decoder := yaml.NewDecoder(config)
+			decoder.KnownFields(true)
+			var ds dataset
+			if err := decoder.Decode(&ds); err != nil {
+				t.Fatal(err)
+			}
+			for _, input := range ds.Files {
+				if _, err := input.validate(); err != nil {
+					t.Errorf("%s: %v", input.Name, err)
+				}
+				if len(input.Headers) > 0 {
+					if err := input.validateHeaders(input.Headers); err != nil {
+						t.Error(err)
+					}
+				}
+			}
+		})
 	}
 }
 

@@ -9,7 +9,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/dgraph-io/dgo/v230"
@@ -52,7 +55,7 @@ type queryResult struct {
 }
 
 func formTarget(host string, port int) string {
-	return fmt.Sprintf("%s:%d", host, port)
+	return net.JoinHostPort(host, strconv.Itoa(port))
 }
 
 func prettyPrintJSON(source []byte) (string, error) {
@@ -97,6 +100,9 @@ func parseOptions(arguments []string, output io.Writer) (options, error) {
 	}
 	if result.queryPath == "" {
 		return options{}, errors.New("query-path is required")
+	}
+	if strings.TrimSpace(result.host) == "" {
+		return options{}, errors.New("host must not be empty")
 	}
 	if result.port < 1 || result.port > 65535 {
 		return options{}, fmt.Errorf("port must be in the range 1..65535: %d", result.port)
@@ -215,22 +221,29 @@ func performQuery(
 }
 
 func printResult(output io.Writer, result queryResult, printResponse bool) error {
-	fmt.Fprintf(output, "Host free RAM before query: %d bytes\n", result.memory.before)
-	fmt.Fprintf(output, "Minimum host free RAM during query: %d bytes\n", result.memory.minimum)
+	if result.response == nil {
+		return errors.New("Dgraph returned no response")
+	}
+	var report bytes.Buffer
+	fmt.Fprintf(&report, "Host free RAM before query: %d bytes\n", result.memory.before)
+	fmt.Fprintf(&report, "Minimum host free RAM during query: %d bytes\n", result.memory.minimum)
 	fmt.Fprintf(
-		output,
+		&report,
 		"System-wide free-RAM drop proxy: %d bytes\n",
 		result.memory.dropProxy(),
 	)
-	fmt.Fprintf(output, "Dgraph-reported latency: %d nanoseconds\n", result.response.GetLatency().GetTotalNs())
-	fmt.Fprintf(output, "Client wall-clock duration: %d nanoseconds\n", result.clientTime.Nanoseconds())
+	fmt.Fprintf(&report, "Dgraph-reported latency: %d nanoseconds\n", result.response.GetLatency().GetTotalNs())
+	fmt.Fprintf(&report, "Client wall-clock duration: %d nanoseconds\n", result.clientTime.Nanoseconds())
 
 	if printResponse {
 		formatted, err := prettyPrintJSON(result.response.GetJson())
 		if err != nil {
 			return err
 		}
-		fmt.Fprintln(output, formatted)
+		fmt.Fprintln(&report, formatted)
+	}
+	if _, err := report.WriteTo(output); err != nil {
+		return fmt.Errorf("write query result: %w", err)
 	}
 	return nil
 }
@@ -265,6 +278,9 @@ func run(arguments []string, output io.Writer) (err error) {
 
 func main() {
 	if err := run(os.Args[1:], os.Stdout); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return
+		}
 		log.Printf("benchmark: %v", err)
 		os.Exit(1)
 	}

@@ -1,0 +1,12 @@
+FROM registry.fedoraproject.org/fedora:44
+
+RUN dnf install -y golang gcc make diffutils curl python3-pyyaml ShellCheck docker-cli docker-compose \
+    && dnf clean all
+
+ENV GOTOOLCHAIN=local \
+    XDG_CONFIG_HOME=/tmp/config \
+    GOCACHE=/tmp/go-build \
+    GOPATH=/tmp/go
+
+WORKDIR /workspace
+CMD ["make", "check"]

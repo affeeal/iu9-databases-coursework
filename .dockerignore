@@ -1,0 +1,6 @@
+.git
+bin
+paper
+datasets/*/sources
+datasets/*/output.rdf
+internal/converter/testdata/*/output.rdf

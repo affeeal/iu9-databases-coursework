@@ -1,6 +1,8 @@
 package converter
 
 import (
+	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -54,7 +56,14 @@ func ProcessDataset(datasetPath string) error {
 
 	var ds dataset
 	if err = decoder.Decode(&ds); err != nil {
-		return err
+		return fmt.Errorf("decode %s: %w", configName, err)
+	}
+	var extra any
+	if err := decoder.Decode(&extra); err != io.EOF {
+		if err != nil {
+			return fmt.Errorf("decode %s: %w", configName, err)
+		}
+		return fmt.Errorf("%s must contain exactly one YAML document", configName)
 	}
 
 	return ds.process(datasetPath)

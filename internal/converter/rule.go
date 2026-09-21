@@ -22,6 +22,9 @@ type facetRule struct {
 }
 
 func (rule *rdfRule) validate(schema map[string]schemaType) error {
+	if rule.Predicate == "" {
+		return errors.New("RDF predicate must not be empty")
+	}
 	err := validateSchemaType(schema, "RDF subject", rule.Subject, true)
 	if err != nil {
 		return err
@@ -69,6 +72,9 @@ func (rule *facetRule) validate(
 	schema map[string]schemaType,
 	context string,
 ) error {
+	if rule.Key == "" {
+		return errors.New(context + " key must not be empty")
+	}
 	return validateSchemaType(schema, context+" value", rule.Value, false)
 }
 

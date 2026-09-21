@@ -4,9 +4,14 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"flag"
+	"io"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/dgraph-io/dgo/v230/protos/api"
 )
 
 func TestMeasureOperationRejectsNonPositiveInterval(t *testing.T) {
@@ -89,6 +94,7 @@ func TestParseOptionsValidation(t *testing.T) {
 		args []string
 	}{
 		{name: "missing path"},
+		{name: "empty host", args: []string{"-query-path", "query.dql", "-host", ""}},
 		{name: "zero port", args: []string{"-query-path", "query.dql", "-port", "0"}},
 		{name: "large port", args: []string{"-query-path", "query.dql", "-port", "65536"}},
 		{name: "zero interval", args: []string{"-query-path", "query.dql", "-sample-interval", "0s"}},
@@ -100,6 +106,70 @@ func TestParseOptionsValidation(t *testing.T) {
 				t.Fatal("invalid options unexpectedly succeeded")
 			}
 		})
+	}
+}
+
+func TestFormTarget(t *testing.T) {
+	for _, test := range []struct{ host, want string }{
+		{"localhost", "localhost:9080"},
+		{"127.0.0.1", "127.0.0.1:9080"},
+		{"::1", "[::1]:9080"},
+	} {
+		if got := formTarget(test.host, 9080); got != test.want {
+			t.Errorf("formTarget(%q) = %q, want %q", test.host, got, test.want)
+		}
+	}
+}
+
+type failingWriter struct{ err error }
+
+func (w failingWriter) Write([]byte) (int, error) { return 0, w.err }
+
+func TestPrintResultPropagatesWriteError(t *testing.T) {
+	want := errors.New("output closed")
+	result := queryResult{response: &api.Response{}}
+	if err := printResult(failingWriter{want}, result, false); !errors.Is(err, want) {
+		t.Fatalf("expected write error, got %v", err)
+	}
+}
+
+func TestPrintResult(t *testing.T) {
+	result := queryResult{
+		response:   &api.Response{Json: []byte(`{"nodes":[]}`), Latency: &api.Latency{TotalNs: 25}},
+		memory:     memoryMeasurement{before: 100, minimum: 80},
+		clientTime: 50 * time.Nanosecond,
+	}
+	var output bytes.Buffer
+	if err := printResult(&output, result, true); err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		"System-wide free-RAM drop proxy: 20 bytes",
+		"Dgraph-reported latency: 25 nanoseconds",
+		"Client wall-clock duration: 50 nanoseconds",
+		"  \"nodes\": []",
+	} {
+		if !strings.Contains(output.String(), want) {
+			t.Errorf("missing %q in output %q", want, output.String())
+		}
+	}
+}
+
+func TestPrintResultRejectsInvalidResponse(t *testing.T) {
+	for _, response := range []*api.Response{nil, {Json: []byte("{")}} {
+		var output bytes.Buffer
+		if err := printResult(&output, queryResult{response: response}, true); err == nil {
+			t.Fatal("invalid response unexpectedly succeeded")
+		}
+		if output.Len() != 0 {
+			t.Fatalf("invalid response produced a partial report: %s", &output)
+		}
+	}
+}
+
+func TestRunHelp(t *testing.T) {
+	if err := run([]string{"-help"}, io.Discard); !errors.Is(err, flag.ErrHelp) {
+		t.Fatalf("expected help without a query or connection, got %v", err)
 	}
 }
 

@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -20,6 +21,9 @@ func (ds *dataset) process(datasetPath string) error {
 		outputName  = "output.rdf"
 		sourcesName = "sources"
 	)
+	if len(ds.Files) == 0 {
+		return fmt.Errorf("dataset must contain at least one source file")
+	}
 
 	output, err := os.CreateTemp(datasetPath, ".output-*.rdf")
 	if err != nil {
@@ -39,13 +43,17 @@ func (ds *dataset) process(datasetPath string) error {
 
 	sourcesPath := filepath.Join(datasetPath, sourcesName)
 	entitiesFacets := make(map[string]entityFacets)
+	writer := bufio.NewWriter(output)
 
 	for _, f := range ds.Files {
-		if err = f.process(entitiesFacets, output, sourcesPath); err != nil {
+		if err = f.process(entitiesFacets, writer, sourcesPath); err != nil {
 			return errors.Wrap(err, f.Name)
 		}
 	}
 
+	if err := writer.Flush(); err != nil {
+		return fmt.Errorf("flush temporary RDF output: %w", err)
+	}
 	if err := output.Sync(); err != nil {
 		return fmt.Errorf("sync temporary RDF output: %w", err)
 	}

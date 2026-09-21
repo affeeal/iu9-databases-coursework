@@ -15,6 +15,7 @@ import (
 
 type file struct {
 	Name                  string            `yaml:"name"`
+	Headers               []string          `yaml:"headers"`
 	Delimiter             string            `yaml:"delimiter"`
 	Comment               string            `yaml:"comment"`
 	Declarations          []declaration     `yaml:"declarations"`
@@ -62,7 +63,7 @@ var (
 
 func (f *file) process(
 	entitiesFacets map[string]entityFacets,
-	output *os.File,
+	output io.Writer,
 	sourcesPath string,
 ) error {
 	schema, err := f.validate()
@@ -82,9 +83,14 @@ func (f *file) process(
 		return err
 	}
 
-	headers, err := reader.Read()
-	if err != nil {
-		return err
+	headers := append([]string(nil), f.Headers...)
+	if len(headers) == 0 {
+		headers, err = reader.Read()
+		if err != nil {
+			return err
+		}
+	} else {
+		reader.FieldsPerRecord = len(headers)
 	}
 
 	if err := f.validateHeaders(headers); err != nil {
@@ -110,10 +116,12 @@ func (f *file) process(
 		if !f.ArtificialDeclaration.empty() {
 			record = append(record, fmt.Sprint(artificialId))
 		}
-		f.saveFacets(entitiesFacets, record, schema, indices)
+		if err := f.saveFacets(entitiesFacets, record, schema, indices); err != nil {
+			return fmt.Errorf("record %d: %w", artificialId+1, err)
+		}
 		err = f.writeRdfs(output, entitiesFacets, record, schema, indices)
 		if err != nil {
-			return err
+			return fmt.Errorf("record %d: %w", artificialId+1, err)
 		}
 	}
 
@@ -150,6 +158,9 @@ func (f *file) validateHeaders(headers []string) error {
 }
 
 func (f *file) validate() (map[string]schemaType, error) {
+	if !filepath.IsLocal(f.Name) {
+		return nil, fmt.Errorf("source name must be a nonempty relative path inside sources: %q", f.Name)
+	}
 	schema, err := f.validateDeclarations()
 	if err != nil {
 		return nil, err
@@ -188,7 +199,7 @@ func (f *file) validateDeclarations() (map[string]schemaType, error) {
 }
 
 func (f *file) adjustReader(reader *csv.Reader) error {
-	// reader.Delimiter == ',' by default
+	// reader.Comma == ',' by default
 	if f.Delimiter != "" {
 		delimiter, err := validateSymbol(f.Delimiter)
 		if err != nil {
@@ -219,8 +230,8 @@ func validateSymbol(rawSymbol string) (rune, error) {
 	}
 
 	symbol, _ := utf8.DecodeRuneInString(rawSymbol)
-	if symbol == '\r' || symbol == '\n' {
-		return 0, errors.New(`special symbol must not be \r, \n`)
+	if symbol == '\r' || symbol == '\n' || symbol == 0 || symbol == '"' || symbol == utf8.RuneError {
+		return 0, fmt.Errorf("invalid CSV delimiter or comment character: %q", symbol)
 	}
 
 	return symbol, nil
@@ -231,8 +242,11 @@ func (file *file) saveFacets(
 	record []string,
 	schema map[string]schemaType,
 	indices map[string]uint,
-) {
+) error {
 	for _, rule := range file.EntityFacets {
+		if record[indices[rule.Id]] == "" {
+			return fmt.Errorf("entity facet ID %q must not be empty", rule.Id)
+		}
 		addFacet(
 			entitiesFacets,
 			makeEntityKey(
@@ -246,10 +260,11 @@ func (file *file) saveFacets(
 			),
 		)
 	}
+	return nil
 }
 
 func (f *file) writeRdfs(
-	output *os.File,
+	output io.Writer,
 	entitiesFacets map[string]entityFacets,
 	record []string,
 	schema map[string]schemaType,
@@ -259,6 +274,9 @@ func (f *file) writeRdfs(
 		objectIndex := indices[rule.Object]
 		if record[objectIndex] == "" {
 			continue
+		}
+		if record[indices[rule.Subject]] == "" {
+			return fmt.Errorf("RDF subject %q must not be empty", rule.Subject)
 		}
 
 		subject := makeBlankNode(
@@ -285,7 +303,7 @@ func (f *file) writeRdfs(
 			object = record[objectIndex]
 		}
 
-		var facets []*rdf.Facet = nil
+		var facets []*rdf.Facet
 		for _, rule := range rule.Facets {
 			facets = append(
 				facets,
@@ -315,7 +333,7 @@ func (f *file) writeRdfs(
 			facets,
 		)
 
-		if _, err := output.WriteString(r.Stringln()); err != nil {
+		if _, err := io.WriteString(output, r.Stringln()); err != nil {
 			return err
 		}
 	}

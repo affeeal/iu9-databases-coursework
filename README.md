@@ -1,15 +1,14 @@
 # Dgraph Dataset Converter and Benchmark Coursework
 
-A reproducible Dgraph coursework project built around a configurable Go
-CSV/TSV-to-RDF converter, four public graph datasets, DQL schemas and workloads,
-a local Docker Compose environment, and a small query-measurement utility. The
-historical evaluation was completed in 2024; this repository exposes the code
-and results without presenting them as a current database benchmark.
+A Go CSV/TSV-to-RDF converter and DQL query-measurement tool, developed for a
+database coursework project in 2024. The repository includes conversion rules,
+Dgraph schemas and queries for four public graph datasets, a local Compose
+environment, and the original [Russian-language report](paper/paper.pdf).
 
 ## Highlights
 
-- YAML-driven declarations, casts, RDF rules, and edge facets;
-- explicit header/configuration validation and atomically written output;
+- YAML-driven declarations, typed output, RDF rules, and edge facets;
+- headered and headerless input, configuration validation, and atomic output;
 - deterministic conversion of multiple datasets concurrently;
 - Dgraph RDF output with escaped string literals;
 - loopback-only local Dgraph services pinned to v23.1.1;
@@ -22,18 +21,19 @@ and results without presenting them as a current database benchmark.
 CSV/TSV + convert.yml
           |
           v
-   Go converter ----> output.rdf + schema.dql
-                              |
-                              v
-                       Dgraph v23.1.1
-                              |
-                              v
-                    DQL query + benchmark
+   Go converter ----> output.rdf
+                          |
+   tracked schema.dql ----+
+                          v
+                   Dgraph v23.1.1
+                          |
+                          v
+                DQL query + benchmark
 ```
 
 ## Quick start
 
-Prerequisites are Go 1.22+, Docker Engine, Docker Compose v2, `curl`, and GNU
+Prerequisites are Go 1.25+, Docker Engine, Docker Compose v2, `curl`, and GNU
 Make. The Go-only path does not require Docker or any large dataset.
 
 ### Converter-only demo
@@ -69,7 +69,7 @@ scripts/wait-for-dgraph.sh
 
 make demo
 scripts/load-dataset.sh internal/converter/testdata/minimal
-go run ./cmd/benchmark -- \
+go run ./cmd/benchmark \
   -query-path internal/converter/testdata/minimal/query.dql \
   -print-response
 
@@ -80,6 +80,14 @@ docker compose down
 ordinary command that deletes it. Published Dgraph ports bind to `127.0.0.1`,
 and the Compose network has a fixed gateway so the admin whitelist can be
 limited to localhost and that gateway.
+
+Use a separate Compose project/data volume for each dataset: predicate names
+and schemas can overlap. Live Loader allocates new UIDs for blank nodes on each
+invocation, so loading the same RDF twice can duplicate data. For example,
+`export COMPOSE_PROJECT_NAME=iu9-demo` selects an isolated demo volume for the
+commands above. Run only one such project at a time: the host ports and network
+subnet are fixed. The readiness helper checks the HTTP health endpoint; it is not
+a substitute for checking whether a particular dataset has finished loading.
 
 `DGRAPH_VERSION=v23.1.1` in [.env](.env) pins the historical database version.
 Ratel is intentionally absent from the default environment rather than using a
@@ -154,7 +162,7 @@ go run ./cmd/converter -datasets-path datasets
 ## Benchmark CLI
 
 ```sh
-go run ./cmd/benchmark -- \
+go run ./cmd/benchmark \
   -query-path datasets/roadNet-CA/queries/query2.dql \
   -host localhost \
   -port 9080 \
@@ -184,6 +192,7 @@ compose.yml          pinned local Zero + Alpha environment
 
 ```sh
 make check
+make demo
 ```
 
 This runs a `gofmt` check, `go vet ./...`, `go test -race ./...`, and
@@ -191,6 +200,36 @@ This runs a `gofmt` check, `go vet ./...`, `go test -race ./...`, and
 malformed responses, configuration validation, Unicode delimiters, duplicate
 and missing headers, RDF escaping, stable facets, atomic output, and the full
 minimal conversion.
+
+CI also builds both CLIs, checks their help output and shell scripts, and runs
+`govulncheck` on the stable Go version. Go 1.25 is the minimum required by the
+updated gRPC dependency.
+
+### Containerized development
+
+To keep Go and the check tools off the host, build the development image:
+
+```sh
+docker build -f Containerfile.dev -t iu9-databases-dev .
+docker run --rm --user "$(id -u):$(id -g)" \
+  -v "$PWD:/workspace" -w /workspace iu9-databases-dev \
+  sh -ec 'make check demo; go build ./...; shellcheck scripts/*.sh'
+```
+
+On Fedora with Podman and SELinux:
+
+```sh
+podman build -f Containerfile.dev -t iu9-databases-dev .
+podman run --rm --userns=keep-id \
+  -v "$PWD:/workspace:Z" -w /workspace iu9-databases-dev \
+  sh -ec 'make check demo; go build ./...; shellcheck scripts/*.sh'
+```
+
+The image contains Go, GCC (for the race detector), Make, ShellCheck, and Compose.
+Go dependencies and build caches live in the disposable container; generated
+RDF is written to the mounted checkout. These checks require no container-engine
+socket or running Dgraph. Use the host's Compose installation for the Dgraph
+demo. The first build and Go run need network access to download dependencies.
 
 ## Limitations and provenance
 
@@ -202,5 +241,4 @@ minimal conversion.
 - The Go source and report were written for the coursework. Dgraph, Go modules,
   Docker, the report template/emblem, and upstream datasets retain their own
   licenses and provenance.
-- No repository-wide license has been added pending an explicit ownership and
-  licensing decision for all retained material.
+- This repository currently has no repository-wide license.
